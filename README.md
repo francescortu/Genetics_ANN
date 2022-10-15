@@ -1,1 +1,1 @@
-# Genetics algorithm and neural networks
+# Genetic algorithm and neural networks
