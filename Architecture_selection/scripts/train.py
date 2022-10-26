@@ -3,9 +3,9 @@ import torch
 from .train_utils import accuracy, AverageMeter
 
 def train_epoch(model, dataloader, loss_fn, optimizer, loss_meter, performance_meter, performance, device):
-    for i, data in enumerate(dataloader, 0):
-        X = data[0].to(device)
-        y = data[1].to(device)
+    for X, y in dataloader:
+        X = X.to(device)
+        y = y.to(device)
         # 1. reset the gradients previously accumulated by the optimizer
         #    this will avoid re-using gradients from previous loops
         optimizer.zero_grad() 
@@ -23,9 +23,6 @@ def train_epoch(model, dataloader, loss_fn, optimizer, loss_meter, performance_m
         # 7. update the loss and accuracy AverageMeter
         loss_meter.update(val=loss.item(), n=X.shape[0])
         performance_meter.update(val=acc, n=X.shape[0])
-        # 8. print the current status of the training
-        if i % 100 == 0:
-            print(f"TRAINING - loss {loss_meter.avg} - performance {performance_meter.avg}")
 
 
 def train_model(model, dataloader, loss_fn, optimizer, num_epochs, checkpoint_loc=None, checkpoint_name="checkpoint.pt", performance=accuracy, device="cuda"):
