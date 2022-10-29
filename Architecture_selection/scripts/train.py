@@ -17,7 +17,7 @@ def train(model, trainloader, device=torch.device("cuda" if torch.cuda.is_availa
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    for i in tqdm(range(iterations)):
+    for i in tqdm(range(iterations), desc="training"):
         try:
             inputs, labels = next(dataloader_iterator)
             inputs, labels = inputs.to(device), labels.to(device)
@@ -40,7 +40,7 @@ def eval(model, testloader, device=torch.device("cuda" if torch.cuda.is_availabl
   total = 0
   # since we're not training, we don't need to calculate the gradients for our outputs
   with torch.no_grad():
-      for data in testloader:
+      for data in tqdm(testloader, desc="evaluating"):
           images, labels = data
           images, labels = images.to(device), labels.to(device)
           # calculate outputs by running images through the network
@@ -52,3 +52,4 @@ def eval(model, testloader, device=torch.device("cuda" if torch.cuda.is_availabl
 
   accuracy = 100 * correct // total
   print(f'Accuracy of the network on the 10000 test images: {accuracy} %')
+  return accuracy
