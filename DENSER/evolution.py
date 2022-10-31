@@ -37,6 +37,7 @@ class evolution():
                 parent_2_idx = parent_1_idx
             child1, child2 = GA_crossover(self.population[parent_1_idx], self.population[parent_2_idx])
             offspring = child1 if child1.len() < child2.len() else child2
+            offspring = GA_mutation(offspring)
             new_population.append(offspring)
         
         self.population = new_population

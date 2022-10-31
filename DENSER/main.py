@@ -2,14 +2,24 @@ from nn_encoding import *
 from scripts.train import train, eval
 from scripts.dataloader import MNIST
 from evolution import evolution
+from torchsummary import summary
 
-
-def test_mutation():
+def test_mutation_GA_level():
     netcode = Net_encoding( 3, 2, 1, 10, 28)
     netcode.print_GAlevel()
+
     GA_mutation(netcode)
     print("\n\nAfter mutation:")
     netcode.print_GAlevel()
+
+def test_mutation_dsge_level():
+    netcode = Net_encoding( 3, 2, 1, 10, 28)
+    summary(Net(netcode))
+
+    new = dsge_mutation(netcode)
+    print("\n\nAfter mutation:")
+    summary(Net(new))
+    #new.print_GAlevel()
 
 def test_crossover():
     parent1 = Net_encoding(4, 2, 1, 10, 28)
@@ -50,14 +60,14 @@ if __name__ == "__main__":
     #test_crossover()
 
     # test mutation
-    test_mutation()
+    test_mutation_dsge_level()
 
     # load dataset for the following test function
     """ batch_size = 4
     trainloader, testloader, input_size, n_classes = MNIST(batch_size)
 
-    print("\n\n Construction of a network and test it of mnist: \n\n")
-    test_nn_encoding(trainloader, testloader, n_classes, batch_size, input_size)
+    #print("\n\n Construction of a network and test it of mnist: \n\n")
+    #test_nn_encoding(trainloader, testloader, n_classes, batch_size, input_size)
 
     print("\n\n Evolution of a population of networks: \n\n")
     test_evolution(trainloader, testloader, batch_size) """

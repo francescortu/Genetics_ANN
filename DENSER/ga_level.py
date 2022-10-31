@@ -13,7 +13,8 @@ This file contains all the functions which are used to handle the GA level.
     say those operations which manipulate the network structure
 
 '''
-
+MAX_LEN_FEATURES = 10
+MAX_LEN_CLASSIFICATION = 3 # 2 in DENSER
 
 class Net_encoding:
     "Describe the encoding of a network."
@@ -24,6 +25,11 @@ class Net_encoding:
         self.last_layer = []
         self.input_shape = input_shape
         channels = self.init_random_channel(c_in, c_out, len_features + len_classification + 1 )
+        
+        if len_features > MAX_LEN_FEATURES:
+            len_features = MAX_LEN_FEATURES
+        if len_classification > MAX_LEN_CLASSIFICATION:
+            len_classification = MAX_LEN_CLASSIFICATION
         
         # add features blocks
         for i in range(len_features):
@@ -226,20 +232,43 @@ class mutation_type(Enum):
     REPLACE = 1
     REMOVAL = 2
 
+def choose_cut(netcode):
+    "choose a random cut"
+    cut = np.random.randint(1, netcode._len()-1)
+    #identify the type of the cut
+    cut_type = netcode.GA_encoding(cut).M_type
+
+    if cut_type == module_types.FEATURES and netcode.len_features() > MAX_LEN_FEATURES :
+        if netcode.len_classification() < MAX_LEN_CLASSIFICATION:
+            cut = np.random.randint(netcode.len_features(), netcode._len()-1) # if the max number of features is reached, the cut is chosen on classification module
+        else:
+            cut = None
+    elif cut_type == module_types.CLASSIFICATION and netcode.len_classification() > MAX_LEN_CLASSIFICATION:
+        if netcode.len_features() < MAX_LEN_FEATURES:
+            cut = np.random.randint(1, netcode.len_features()-1)
+        else:
+            cut = None
+
+    return cut
+
 def GA_mutation(offspring):
     "randomly choose the mutation type"
     type = np.random.randint(len(mutation_type))
-    if type == 0:
-        cut = np.random.randint(1, offspring._len()-1)
-        c_in =  np.random.randint(7,30) 
-        c_out =  np.random.randint(7,30)
-        cut_type = offspring.GA_encoding(cut).M_type
-        if cut_type == module_types.FEATURES:
-            module = Module(module_types.FEATURES, c_in = c_in, c_out = c_out)
-        elif cut_type == module_types.CLASSIFICATION:
-            module = Module(module_types.CLASSIFICATION, c_in = c_in, c_out = c_out)
 
-        return GA_add(offspring, cut, module)
+    if type == 0:
+        cut = choose_cut(offspring)
+        if cut is not None:
+            c_in =  np.random.randint(7,30) 
+            c_out =  np.random.randint(7,30)
+            cut_type = offspring.GA_encoding(cut).M_type
+            if cut_type == module_types.FEATURES:
+                module = Module(module_types.FEATURES, c_in = c_in, c_out = c_out)
+            elif cut_type == module_types.CLASSIFICATION:
+                module = Module(module_types.CLASSIFICATION, c_in = c_in, c_out = c_out)
+
+            return GA_add(offspring, cut, module)
+        else:
+            return offspring
     elif type == 1:
         return GA_replace(offspring)
     else:
@@ -280,21 +309,21 @@ def GA_add(offspring, cut, module):
 def GA_replace(offspring):
     "replace a module at random position"
     #find the position of the layer we want to copy
-    cut1 = np.random.randint(1, offspring._len()-1)
+    cut1 = choose_cut(offspring)
     
-    #identify the type of the cut
-    cut_type = offspring.GA_encoding(cut1).M_type
+    if cut1 is not None:
+        #identify the type of the cut
+        cut_type = offspring.GA_encoding(cut1).M_type
 
-    
-    # now find where we want to relocate (add) it
-    if cut_type == module_types.FEATURES:
-        cut2 = np.random.randint(1, offspring.len_features()-1)
-    elif cut_type == module_types.CLASSIFICATION:
-        cut2 = np.random.randint(offspring.len_features(), offspring.len_features() + offspring.len_classification()-1)
-    
-    # The copy must be done by reference
-    module = offspring.GA_encoding(cut1) # determine the module to copy
-    GA_add(offspring, cut2, module)
+        # now find where we want to relocate (add) it
+        if cut_type == module_types.FEATURES:
+            cut2 = np.random.randint(1, offspring.len_features()-1)
+        elif cut_type == module_types.CLASSIFICATION:
+            cut2 = np.random.randint(offspring.len_features(), offspring.len_features() + offspring.len_classification()-1)
+        
+        # The copy must be done by reference
+        module = offspring.GA_encoding(cut1) # determine the module to copy
+        GA_add(offspring, cut2, module)
 
 
     return offspring
@@ -308,18 +337,30 @@ def GA_remove(offspring):
     #identify the type of the cut
     cut_type = offspring.GA_encoding(cut).M_type
 
-    if cut_type == module_types.FEATURES:
-        #remove the module
-        offspring.features.pop(cut)
-        #fix channels
-        offspring.fix_channels(cut, offspring.len_features())
-        return offspring
+    if cut_type == module_types.FEATURES and offspring.len_features() <= 1: # if cut is of type features and there is only one module, we cannot remove it and we change it
+        if offspring.len_classification() > 1:
+            cut = np.random.randint(offspring.len_features(), offspring._len()-1) 
+        else:
+            cut = None
+    elif cut_type == module_types.CLASSIFICATION and offspring.len_classification() <=1: # if cut is of type classification and there is only one module, we cannot remove it and we change it
+        if offspring.len_features() <= 1:
+            cut = np.random.randint(1, offspring.len_features()-1)
+        else:
+            cut = None
 
-    elif cut_type == module_types.CLASSIFICATION:
-        #remove the module
-        offspring.classification.pop(cut - offspring.len_features())
-        #fix channels
-        offspring.fix_channels(cut, offspring.len_features() + offspring.len_classification())
-        return offspring
+    if cut is not None:
+        if cut_type == module_types.FEATURES:
+            #remove the module
+            offspring.features.pop(cut)
+            #fix channels
+            offspring.fix_channels(cut, offspring.len_features())
+            return offspring
+
+        elif cut_type == module_types.CLASSIFICATION:
+            #remove the module
+            offspring.classification.pop(cut - offspring.len_features())
+            #fix channels
+            offspring.fix_channels(cut, offspring.len_features() + offspring.len_classification())
+            return offspring
 
     return offspring
