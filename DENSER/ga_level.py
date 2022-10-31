@@ -1,10 +1,16 @@
+from http.client import RemoteDisconnected
+from tkinter import OFF
 from dsge_level import *
 
 '''
 
 This file contains all the functions which are used to handle the GA level.
-It deals with the modules at the GA level and the crossover operations to 
-obtain the new offspring from two parents.
+
+* It deals with the modules at the GA level and the crossover operations to 
+    obtain the new offspring from two parents.
+
+* It also contains the functions to mutate the offspring at the GA level, that is to 
+    say those operations which manipulate the network structure
 
 '''
 
@@ -109,6 +115,8 @@ class Net_encoding:
             new = min(c_in, c_out)
             self.GA_encoding(cut2-1).fix_channels(c_out = new)
             self.GA_encoding(cut2).fix_channels(c_in = new)
+            
+        # fix in channels of the first classification block
         last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
         self.classification[0].fix_channels(c_in = last_in)
 
@@ -126,8 +134,8 @@ class cross_type(Enum):
 
 def GA_crossover(parent1, parent2):
     "randomly choose the crossover type"
-    type = np.random.randint(len(cross_type))
-    if type == 'ONE_POINT':
+    type = 1# np.random.randint(len(cross_type))
+    if type == 0:
         return GA_one_point(parent1, parent2)
     else:
         return GA_bit_mask(parent1, parent2)
@@ -142,25 +150,26 @@ def GA_bit_mask(parent1, parent2):
         mask1 = mask
         mask2 = 1 - mask1
         p = [parent1, parent2]
-
-        child1, child2 = parent1, parent2
+      
+        child1 = Net_encoding(p[mask1[0]].len_features(), p[mask1[1]].len_classification(), p[mask1[0]].param['input_channels'], p[mask1[2]].param['output_channels'], p[mask1[0]].input_shape)
+        child2 = Net_encoding(p[mask2[0]].len_features(), p[mask2[1]].len_classification(), p[mask2[0]].param['input_channels'], p[mask2[2]].param['output_channels'], p[mask2[0]].input_shape)
         # copy features
         child1.features = copy.deepcopy(p[mask1[0]].features)
         child2.features = copy.deepcopy(p[mask2[0]].features)
         # copy classification
         child1.classification = copy.deepcopy(p[mask1[1]].classification)
         child2.classification = copy.deepcopy(p[mask2[1]].classification)
-        # copy last layer
+         # copy last layer
         child1.last_layer = copy.deepcopy(p[mask1[2]].last_layer)
         child2.last_layer = copy.deepcopy(p[mask2[2]].last_layer)
         
         # fix channels
-        child1.fix_channels(p[mask1[0]].len_features(), parent1.len_features()+1)
-        child2.fix_channels(p[mask2[0]].len_features(), parent2.len_features()+1)
+        child1.fix_channels(child1.len_features(), child1.len_features())
+        child2.fix_channels(child2.len_features(), child2.len_features())
         
-        child1.fix_channels(p[mask1[0]].len_features() + parent1.len_classification(), parent1.len_features() + parent1.len_classification()+1)
-        child2.fix_channels(p[mask2[0]].len_features() + parent1.len_classification(), parent2.len_features() + parent1.len_classification() +1)
-
+        child1.fix_channels(child1.len_features() + child1.len_classification(), child1.len_features() + child1.len_classification())
+        child2.fix_channels(child2.len_features() + child2.len_classification(), child2.len_features() + child2.len_classification())
+       
         return child1, child2
         
 def GA_one_point(parent1, parent2):
@@ -173,9 +182,9 @@ def GA_one_point(parent1, parent2):
 
         #find a cut on the same module also on parent2
         if cut1_type == module_types.FEATURES:
-            cut_parent2 = np.random.randint(0, parent2.len_features()-1)
+            cut_parent2 = np.random.randint(1, parent2.len_features()-1)
         elif cut1_type == module_types.CLASSIFICATION:
-            cut_parent2 = np.random.randint(parent2.len_features(), parent2.len_features() + parent2.len_classification()-1)
+            cut_parent2 = np.random.randint(parent2.len_features(), parent2.len_features() + parent2.len_classification())
         
         if cut1_type == module_types.FEATURES:
             aux1 = copy.deepcopy(parent1.features[cut_parent1:])
@@ -205,3 +214,112 @@ def GA_one_point(parent1, parent2):
             return parent1, parent2
 
         return parent1, parent2
+
+
+##################################
+# MUTATION
+##################################
+
+
+class mutation_type(Enum):
+    ADDITION = 0
+    REPLACE = 1
+    REMOVAL = 2
+
+def GA_mutation(offspring):
+    "randomly choose the mutation type"
+    type = np.random.randint(len(mutation_type))
+    if type == 0:
+        cut = np.random.randint(1, offspring._len()-1)
+        c_in =  np.random.randint(7,30) 
+        c_out =  np.random.randint(7,30)
+        cut_type = offspring.GA_encoding(cut).M_type
+        if cut_type == module_types.FEATURES:
+            module = Module(module_types.FEATURES, c_in = c_in, c_out = c_out)
+        elif cut_type == module_types.CLASSIFICATION:
+            module = Module(module_types.CLASSIFICATION, c_in = c_in, c_out = c_out)
+
+        return GA_add(offspring, cut, module)
+    elif type == 1:
+        return GA_replace(offspring)
+    else:
+        return GA_remove(offspring)
+
+
+def GA_add(offspring, cut, module):
+    
+    #identify the type of the cut
+    cut_type = offspring.GA_encoding(cut).M_type
+
+    # add control to check if we have reached the maximum number of modules
+    if cut_type == module_types.FEATURES:
+        tmp = copy.deepcopy(offspring.features[cut:])
+        offspring.features = copy.deepcopy(offspring.features[:cut + 1])
+
+        # add the module
+        offspring.features[cut] = module
+        offspring.features.extend(tmp) # add the rest of the modules
+
+        #fix channels before and after the cut
+        offspring.fix_channels(cut, cut+1) 
+        return offspring
+
+    elif cut_type == module_types.CLASSIFICATION:
+        tmp = copy.deepcopy(offspring.classification[cut - offspring.len_features():])
+        offspring.classification = copy.deepcopy(offspring.classification[:cut - offspring.len_features() + 1])
+        
+        # add the module
+        offspring.classification[cut- offspring.len_features()] = module
+        offspring.classification.extend(tmp) # add the rest of the modules
+        #fix channels before and after the cut        
+        offspring.fix_channels(cut, cut+1)
+        return offspring
+
+    return offspring
+
+def GA_replace(offspring):
+    "replace a module at random position"
+    #find the position of the layer we want to copy
+    cut1 = np.random.randint(1, offspring._len()-1)
+    
+    #identify the type of the cut
+    cut_type = offspring.GA_encoding(cut1).M_type
+
+    
+    # now find where we want to relocate (add) it
+    if cut_type == module_types.FEATURES:
+        cut2 = np.random.randint(1, offspring.len_features()-1)
+    elif cut_type == module_types.CLASSIFICATION:
+        cut2 = np.random.randint(offspring.len_features(), offspring.len_features() + offspring.len_classification()-1)
+    
+    # The copy must be done by reference
+    module = offspring.GA_encoding(cut1) # determine the module to copy
+    GA_add(offspring, cut2, module)
+
+
+    return offspring
+
+
+def GA_remove(offspring):
+    "remove a module at random position"
+    #find cutting point
+    cut = np.random.randint(1, offspring._len()-1)
+    
+    #identify the type of the cut
+    cut_type = offspring.GA_encoding(cut).M_type
+
+    if cut_type == module_types.FEATURES:
+        #remove the module
+        offspring.features.pop(cut)
+        #fix channels
+        offspring.fix_channels(cut, offspring.len_features())
+        return offspring
+
+    elif cut_type == module_types.CLASSIFICATION:
+        #remove the module
+        offspring.classification.pop(cut - offspring.len_features())
+        #fix channels
+        offspring.fix_channels(cut, offspring.len_features() + offspring.len_classification())
+        return offspring
+
+    return offspring

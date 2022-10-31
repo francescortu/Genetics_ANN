@@ -56,8 +56,6 @@ class evolution():
         return model
 
     def scoring_function(self, modelcode):
-        correct = 0
-        total = 0
         model = self.training_function(modelcode)
         accuracy = eval(model, self.testloader)
         return accuracy
