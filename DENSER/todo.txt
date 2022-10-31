@@ -1,0 +1,10 @@
+Things yet to be done:
+
+* about crossover:
+    the module (where the cut is placed) should be selected in tournament
+    "we first select a given module from the two parents (selected by tournament), and then we apply a one-point crossover 
+    to the module, without changing any of the remaining modules."
+
+* add softmax (?) like it is in DENSER
+
+* at the moment the mutations at GA level involve only features and classification layers 
