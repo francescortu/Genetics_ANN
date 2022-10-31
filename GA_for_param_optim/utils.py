@@ -339,36 +339,35 @@ class Evaluator:
 
         return model
 
+        def assemble_optimiser(self, learning):
+    """
+        Maps the learning into a keras optimiser
+        Parameters
+        ----------
+        learning : dict
+            output of get_learning
+        Returns
+        -------
+        optimiser : keras.optimizers.Optimizer
+            keras optimiser that will be later used to train the model
+    """
 
-    def assemble_optimiser(self, learning):
-        """
-            Maps the learning into a keras optimiser
-            Parameters
-            ----------
-            learning : dict
-                output of get_learning
-            Returns
-            -------
-            optimiser : keras.optimizers.Optimizer
-                keras optimiser that will be later used to train the model
-        """
+    if learning['learning'] == 'rmsprop':
+        return keras.optimizers.RMSprop(lr = float(learning['lr']),
+                                        rho = float(learning['rho']),
+                                        decay = float(learning['decay']))
+    
+    elif learning['learning'] == 'gradient-descent':
+        return keras.optimizers.SGD(lr = float(learning['lr']),
+                                    momentum = float(learning['momentum']),
+                                    decay = float(learning['decay']),
+                                    nesterov = bool(learning['nesterov']))
 
-        if learning['learning'] == 'rmsprop':
-            return keras.optimizers.RMSprop(lr = float(learning['lr']),
-                                            rho = float(learning['rho']),
-                                            decay = float(learning['decay']))
-        
-        elif learning['learning'] == 'gradient-descent':
-            return keras.optimizers.SGD(lr = float(learning['lr']),
-                                        momentum = float(learning['momentum']),
-                                        decay = float(learning['decay']),
-                                        nesterov = bool(learning['nesterov']))
-
-        elif learning['learning'] == 'adam':
-            return keras.optimizers.Adam(lr = float(learning['lr']),
-                                         beta_1 = float(learning['beta1']),
-                                         beta_2 = float(learning['beta2']),
-                                         decay = float(learning['decay']))
+    elif learning['learning'] == 'adam':
+        return keras.optimizers.Adam(lr = float(learning['lr']),
+                                        beta_1 = float(learning['beta1']),
+                                        beta_2 = float(learning['beta2']),
+                                        decay = float(learning['decay']))
 
 
     def evaluate(self, phenotype, load_prev_weights, weights_save_path, parent_weights_path,\
@@ -693,34 +692,34 @@ class Individual:
         self.fitness = None
         self.metrics = None
         self.num_epochs = None
-        self.trainable_parameters = None
-        self.time = None
-        self.current_time = 0
-        self.train_time = 0
-        self.id = ind_id
+        self.trainable_parameters = None    
+        self.time = None    
+        self.current_time = 0   
+        self.train_time = 0 
+        self.id = ind_id    
 
-    def initialise(self, grammar, levels_back, reuse, init_max):
-        """
-            Randomly creates a candidate solution
-            Parameters
-            ----------
-            grammar : Grammar
-                grammar instaces that stores the expansion rules
-            levels_back : dict
-                number of previous layers a given layer can receive as input
-            reuse : float
-                likelihood of reusing an existing layer
-            Returns
-            -------
-            candidate_solution : Individual
-                randomly created candidate solution
-        """
+    def initialise(self, grammar, levels_back, reuse, init_max):    
+        """ 
+            Randomly creates a candidate solution   
+            Parameters  
+            ----------  
+            grammar : Grammar   
+                grammar instaces that stores the expansion rules    
+            levels_back : dict  
+                number of previous layers a given layer can receive as input    
+            reuse : float   
+                likelihood of reusing an existing layer 
+            Returns 
+            ------- 
+            candidate_solution : Individual 
+                randomly created candidate solution 
+        """ 
 
-        for non_terminal, min_expansions, max_expansions in self.network_structure:
-            new_module = Module(non_terminal, min_expansions, max_expansions, levels_back[non_terminal], min_expansions)
-            new_module.initialise(grammar, reuse, init_max)
+        for non_terminal, min_expansions, max_expansions in self.network_structure: 
+            new_module = Module(non_terminal, min_expansions, max_expansions, levels_ba ck[non_terminal], min_expansions)
+            new_module.initialise(grammar, reuse, init_max) 
 
-            self.modules.append(new_module)
+            self.modules.append(new_module) 
 
         #Initialise output
         self.output = grammar.initialise(self.output_rule)
