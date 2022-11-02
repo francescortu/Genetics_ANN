@@ -19,6 +19,11 @@ This file contains the functions to handle the modules at the DSGE,
 that is to say the layers inside each single module and their compatibility.
 
 '''
+
+MIN_KERNEL_SIZE = 1
+MAX_KERNEL_SIZE = 4
+MIN_STRIDE = 1
+MAX_STRIDE = 3
             
 #####################
 # Layers definition #
@@ -58,10 +63,15 @@ class Layer:
         self.random_init_param()                  #randomly choose the parameters of the type
 
     def random_init_param(self):
+        kernel_size = np.random.randint(MIN_KERNEL_SIZE, MAX_KERNEL_SIZE)
+        stride_size = np.random.randint(MIN_STRIDE, MAX_STRIDE)
+
         if self.type == layer_type.POOLING:           #randomly choose a pooling type
-            self.param = {"pool_type" : pool(np.random.randint(len(pool))), "kernel_size": np.random.randint(2, 5), "stride": np.random.randint(1, 3), "padding": np.random.randint(0, 2)}
+            padding_size = np.random.randint(0,int(kernel_size/2)+1) # pad should be smaller than or equal to half of kernel size
+            self.param = {"pool_type" : pool(np.random.randint(len(pool))), "kernel_size": kernel_size, "stride": stride_size, "padding": padding_size}
         elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
-            self.param = {'kernel_size': np.random.randint(2, 5), 'stride': np.random.randint(1, 2), 'padding': np.random.randint(1, 2)}
+            padding_size = np.random.randint(int(kernel_size/2), kernel_size)
+            self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding_size}
         elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
             self.param = activation(np.random.randint(len(activation)))
         elif self.type == layer_type.LINEAR:     #linear layer has no parameters
@@ -172,7 +182,7 @@ In DENSER we have three types of mutation at the dsge level:
 
 class mutation_type(Enum):
     GRAMMATICAL = 0
-    #INTEGER = 1
+    INTEGER = 1
     #FLOAT = 2
 
 def dsge_mutation(offspring):
@@ -190,6 +200,7 @@ def dsge_mutation(offspring):
 
 def grammatical_mutation(offspring):
     "Grammatical mutation of the DSGE encoding."
+    print("grammatical mutation")
     #randomly choose a random gene
     gene = np.random.randint(1, offspring._len())
      
@@ -231,6 +242,7 @@ def grammatical_mutation(offspring):
 
 def integer_mutation(offspring):
     "Integer mutation of the DSGE encoding."
+    print("integer mutation")
     #randomly choose a random gene
     gene = np.random.randint(1, offspring._len())
     

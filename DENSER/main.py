@@ -4,6 +4,8 @@ from scripts.dataloader import MNIST
 from evolution import evolution
 from torchsummary import summary
 
+import csv
+
 def test_mutation_GA_level():
     netcode = Net_encoding( 3, 2, 1, 10, 28)
     netcode.print_GAlevel()
@@ -48,11 +50,27 @@ def test_nn_encoding(trainloader, testloader, n_classes, batch_size, input_size)
 
 def test_evolution(trainloader, testloader, batch_size):
     curr_env = evolution(population_size=2, holdout=0.6, mating=True, trainloader=trainloader, testloader=testloader, batch_size=batch_size)
-
-    # get current most suitable network (organism)
-    best_net, score = curr_env.get_best_organism()
     
+    # run evolution and write result on file
+    f = open('results.csv', 'w+')
+    # create the csv writer
+    writer = csv.writer(f)
+
+    fieldnames = ['generation', 'best_score', 'num_layers']
+    writer.writerow(fieldnames)
+    res = []
+
+    generations = 2
+    for i in range(generations):
+        curr_env.generation()
+        this_generation_best, score = curr_env.get_best_organism()
+        best_net = this_generation_best
+        print("Generation ", i , "'s best network accuracy: ", score, "%")
+        res.append([i, score, best_net._len()])
+
     print("Best accuracy obtained: ", score)
+    writer.writerows(res)
+    f.close()
 
 if __name__ == "__main__":
     # look at construction thorugh network enconding, how crossover is performed
@@ -60,16 +78,16 @@ if __name__ == "__main__":
     #test_crossover()
 
     # test mutation
-    test_mutation_dsge_level()
+    #test_mutation_dsge_level()
 
     # load dataset for the following test function
-    """ batch_size = 4
+    batch_size = 4
     trainloader, testloader, input_size, n_classes = MNIST(batch_size)
 
     #print("\n\n Construction of a network and test it of mnist: \n\n")
     #test_nn_encoding(trainloader, testloader, n_classes, batch_size, input_size)
 
     print("\n\n Evolution of a population of networks: \n\n")
-    test_evolution(trainloader, testloader, batch_size) """
+    test_evolution(trainloader, testloader, batch_size)
 
     

@@ -43,9 +43,36 @@ def train(model, trainloader, batch_size = 4, epochs = 1, inspected = 1000):
 
             except StopIteration:
                 print("StopIteration, not enough data")
-    
+            
     return model
 
+'''
+This is a simple function to check the model is properly built and correctly working  
+'''
+def test_model(model, trainloader):
+    '''
+    model: the model to train
+    trainloader: the dataloader for the training data
+    '''
+    device=torch.device("cuda" if torch.cuda.is_available() else "cpu") # the device type is automatically chosen
+
+    model.to(device)
+    dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
+      
+    try:
+        inputs, labels = next(dataloader_iterator)
+        inputs, labels = inputs.to(device), labels.to(device)
+        
+        # run inputs through the network to see if everything works
+        model(inputs)
+
+    except Exception as e:
+        print("This network will be discarded as some measures are incorrect. In particular:\n", e)
+        return False
+            
+    return True
+
+    
 def eval(model, testloader):
     '''
     model: the model to evaluate
@@ -69,3 +96,5 @@ def eval(model, testloader):
     accuracy = 100 * correct // total
     print(f'Accuracy of the network on the 10000 test images: {accuracy} %')
     return accuracy
+
+
