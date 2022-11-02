@@ -7,7 +7,7 @@
 <dropout> ::= layer:dropout [rate,float,1,0,0.7]
 <classification> ::= <fully-connected> | <dropout>
 <fully-connected> ::= layer:fc <activation-function> [num-units,int,1,128,2048] <bias> 
-<activation-function> ::= act:linear | act:relu | act:sigmoid
+<activation-function> ::= act:tanh | act:relu | act:sigmoid
 <bias> ::= bias:True | bias:False
 <softmax> ::= layer:fc act:softmax num-units:10 bias:True
 <learning> ::= <gradient-descent> <early-stop> [batch_size,int,1,50,500] epochs:400 | <rmsprop> <early-stop> [batch_size,int,1,50,500] epochs:400 | <adam> <early-stop> [batch_size,int,1,50,500] epochs:400
