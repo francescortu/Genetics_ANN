@@ -1,5 +1,5 @@
 from nn_encoding import *
-from scripts.train import train, eval
+from scripts.train import train, eval, test_model
 
 
 class evolution():
@@ -12,9 +12,11 @@ class evolution():
         self.testloader = testloader
         self.batch_size = batch_size
         
+
         self.population_size = population_size
         self.population = []
-        for _ in range(population_size):
+   
+        for _ in range(self.population_size):
             num_feat = np.random.randint(1, 10)
             num_class = np.random.randint(1, 10)
             self.population.append(Net_encoding(num_feat,num_class,1,10,28))
@@ -36,8 +38,9 @@ class evolution():
             else:
                 parent_2_idx = parent_1_idx
             child1, child2 = GA_crossover(self.population[parent_1_idx], self.population[parent_2_idx])
-            offspring = child1 if child1.len() < child2.len() else child2
+            offspring = child1 if child1._len() < child2._len() else child2
             offspring = GA_mutation(offspring)
+            offspring = dsge_mutation(offspring)
             new_population.append(offspring)
         
         self.population = new_population
@@ -51,12 +54,15 @@ class evolution():
 
         return self.best_organism, self.best_score
 
-    def training_function(self, netcode):
-        model = Net(netcode)
+    def training_function(self, model):
         train(model, self.trainloader, self.batch_size)
         return model
 
     def scoring_function(self, modelcode):
-        model = self.training_function(modelcode)
-        accuracy = eval(model, self.testloader)
+        model = Net(modelcode)
+        accuracy = 0
+        if test_model(model, self.trainloader): # if model is properly working
+            model = self.training_function(model)
+            accuracy = eval(model, self.testloader)
+        
         return accuracy

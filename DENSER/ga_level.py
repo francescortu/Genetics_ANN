@@ -238,6 +238,7 @@ def choose_cut(netcode):
     #identify the type of the cut
     cut_type = netcode.GA_encoding(cut).M_type
 
+    #control we have not reached the maximum number of layers per module
     if cut_type == module_types.FEATURES and netcode.len_features() > MAX_LEN_FEATURES :
         if netcode.len_classification() < MAX_LEN_CLASSIFICATION:
             cut = np.random.randint(netcode.len_features(), netcode._len()-1) # if the max number of features is reached, the cut is chosen on classification module
@@ -245,7 +246,7 @@ def choose_cut(netcode):
             cut = None
     elif cut_type == module_types.CLASSIFICATION and netcode.len_classification() > MAX_LEN_CLASSIFICATION:
         if netcode.len_features() < MAX_LEN_FEATURES:
-            cut = np.random.randint(1, netcode.len_features()-1)
+            cut = np.random.randint(1, netcode.len_features())
         else:
             cut = None
 
@@ -254,8 +255,8 @@ def choose_cut(netcode):
 def GA_mutation(offspring):
     "randomly choose the mutation type"
     type = np.random.randint(len(mutation_type))
-
-    if type == 0:
+    print("GA mutation type ", type)
+    if type == mutation_type.ADDITION:
         cut = choose_cut(offspring)
         if cut is not None:
             c_in =  np.random.randint(7,30) 
@@ -269,7 +270,7 @@ def GA_mutation(offspring):
             return GA_add(offspring, cut, module)
         else:
             return offspring
-    elif type == 1:
+    elif type == mutation_type.REPLACE:
         return GA_replace(offspring)
     else:
         return GA_remove(offspring)
@@ -319,7 +320,7 @@ def GA_replace(offspring):
         if cut_type == module_types.FEATURES:
             cut2 = np.random.randint(1, offspring.len_features()-1)
         elif cut_type == module_types.CLASSIFICATION:
-            cut2 = np.random.randint(offspring.len_features(), offspring.len_features() + offspring.len_classification()-1)
+            cut2 = np.random.randint(offspring.len_features(), offspring.len_features() + offspring.len_classification())
         
         # The copy must be done by reference
         module = offspring.GA_encoding(cut1) # determine the module to copy
@@ -343,7 +344,7 @@ def GA_remove(offspring):
         else:
             cut = None
     elif cut_type == module_types.CLASSIFICATION and offspring.len_classification() <=1: # if cut is of type classification and there is only one module, we cannot remove it and we change it
-        if offspring.len_features() <= 1:
+        if offspring.len_features() > 2: # this has to be updated
             cut = np.random.randint(1, offspring.len_features()-1)
         else:
             cut = None
