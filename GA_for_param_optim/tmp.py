@@ -11,19 +11,78 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchsummary import summary
+N_CLASSES = 10
 
 DEBUG = 0
 
+class genNN(nn.Module):
+
+    """
+        Generic Neural Network class
+
+        Attributes:
+        -----------
+            fe: torch.nn.Sequential()
+                feature sequential submodule
+            c: torch.nn.Sequential()
+                classification sequential submodule
+            last: torch.nn.Sequential()
+                last layer submodule
+        Method:
+        -----------
+            forward(self,x)
+                feed NN with input and compute output
+
+    """
+
+    def __init__(self,fe,c,last):
+        super(genNN, self).__init__()
+        self.fe = fe
+        self.c = c
+        self.last = last
+    def forward(self, x):
+        """
+            feed NN with input and compute output
+
+            Parameters:
+            ------------
+                x: torch.Tensor
+                 input tensor
+            Return:
+            -------------
+                logits, probs: tuple(torch.Tensor,torch.Tensor)
+                             logits and probability of each class
+
+        """
+        x = self.fe(x)
+        x = torch.flatten(x, 1)
+        x = self.c(x)
+        logits = self.l(x)
+        probs = F.softmax(logits, dim=1)
+        return logits, probs
+
 # add static method!
 def get_act(name):
-    if name == 'linear':
-        return nn.Linear()
+    """
+    Return the activation function from the string passed as input
+
+    Parameters
+    ----------
+        name : str
+                name of the activation function
+    Return
+    ----------
+        activation function : torch obj
+
+    """
+    if name == 'tanh':
+        return nn.Tanh()
     elif name == 'relu':
         return nn.ReLU()
     elif name == 'sigmoid':
         return nn.Sigmoid()
 
-# I want them const
+# I want them const, maybe some stuff inside is useless
 def compute_output_conv2d(input_shape,out_channel, kernel_size, stride, padding, dilation=1):
     """
         Compute the output shape after a conv layer.
@@ -62,58 +121,62 @@ def compute_input_conv2d(output_shape, kernel_size, stride, padding, dilation=1)
     else:
         return int((output_shape - 1)*stride + dilation*(kernel_size-1) - 2*padding + 1)
 
-class Evaluator:
-    """
-        Stores the dataset, maps the phenotype into a trainable model, and
-        evaluates it
-        Attributes
-        ----------
-        dataset : dict
-            dataset instances and partitions
-        fitness_metric : function
-            fitness_metric (y_true, y_pred)
-            y_pred are the confidences
-        Methods
-        -------
-        get_layers(phenotype)
-            parses the phenotype corresponding to the layers
-            auxiliary function of the assemble_network function
-        get_learning(learning)
-            parses the phenotype corresponding to the learning
-            auxiliary function of the assemble_optimiser function
-        assemble_network(keras_layers, input_size)
-            maps the layers phenotype into a keras model
-        assemble_optimiser(learning)
-            maps the learning into a keras optimiser
-        evaluate(phenotype, load_prev_weights, weights_save_path, parent_weights_path,
-                 train_time, num_epochs, datagen=None, input_size=(32, 32, 3))
-            evaluates the keras model using the keras optimiser
-        testing_performance(self, model_path)
-            compute testing performance of the model
-    """
 
-    def __init__(self):
-        """
-            Creates the Evaluator instance and loads the dataset.
-            Parameters
-            ----------
-            dataset : str
-                dataset to be loaded
-        """
 
+
+    
+
+class Net_encoding:
+    """
+    Assembling the net and the macro rules using phenotype
+
+    Attributes:
+    -----------
+        features: List
+            list of features layers
+        classification: List
+            list of classification layers
+        input_shape = Tuple 3-dim
+            channel,width,height of input
+        feat_pheno = str
+            phenotype of feature block
+        class_pheno = str
+            phenotype of classification block
+    Methods
+    -----------
+        get_layers(self, phenotype)
+            Parses the phenotype corresponding to the layers.
+        assemble_block(self, torch_layers, input_size):
+            Maps the layers phenotype into a sequential model
+        assemble_model(self)
+            Merge in a torch module the sequential blocks of feature and classification
+        get_learning(self)
+            Parses the phenotype corresponding to the learning
+        assemble_optimiser(self, model)
+            Maps the learning into a torch optimiser            
+    """
+    def __init__(self, len_features, len_classification, c_in, c_out, input_shape, feat_pheno,class_pheno,learn_pheno):
+  
+        self.features = []
+        self.classification = []
+        self.input_shape = input_shape
+        self.feat_pheno = feat_pheno
+        self.class_pheno = class_pheno
+        self.learn_pheno = learn_pheno
+        channels = self.init_random_channel(c_in, c_out, len_features + len_classification + 1 )
 
     def get_layers(self, phenotype):
         """
-            Parses the phenotype corresponding to the layers.
-            Auxiliary function of the assemble_network function.
-            Parameters
-            ----------
-            phenotye : str
-                individual layers phenotype
-            Returns
-            -------
-            layers : list
-                list of tuples (layer_type : str, node properties : dict)
+        Parses the phenotype corresponding to the layers.
+        Auxiliary function of the assemble_network function.
+        Parameters
+        ----------
+        phenotye : str
+            individual layers phenotype
+        Returns
+        -------
+        layers : list
+            list of tuples (layer_type : str, node properties : dict)
         """
 
         raw_phenotype = phenotype.split(' ')
@@ -141,23 +204,236 @@ class Evaluator:
         layers.append((layer_type, node_properties))
 
         return layers
+        
+    
+
+    def assemble_block(self, torch_layers, input_size):
+            """
+                Maps the layers phenotype into a sequential model
+                Parameters
+                ----------
+                torch_layers : list
+                    output from get_layers
+                input_size : tuple
+                    network input shape
+                Returns
+                -------
+                model : torch.models.Model
+                    torch trainable model
+            """
+
+            #input layer
+            input_l = input_size
+
+            #Create layers -- ADD NEW LAYERS HERE
+            layers = []
+            for layer_type, layer_params in torch_layers:
+                if DEBUG == 0:
+                    print(f'layer_type: {layer_type}')
+                #convolutional layer
+                if layer_type == 'conv':
+                    conv_layer= nn.Conv2d(in_channels = input_l[2], 
+                                        out_channels = int(layer_params['num-filters'][0]), # not sure about it 
+                                        kernel_size = (int(layer_params['filter-shape'][0]), int(layer_params['filter-shape'][0])), 
+                                        stride= (int(layer_params['stride'][0]), int(layer_params['stride'][0])), 
+                                        padding= layer_params['padding'][0], 
+                                        dilation=1, 
+                                        groups=1, 
+                                        bias=eval(layer_params['bias'][0]), 
+                                        padding_mode='zeros', 
+                                        device=None, 
+                                        dtype=None)
+                    
+                    act_layer = get_act(layer_params['act'][0])
+                    
+                    # if padding is same we need to compute so that input shape = output shape
+                    if layer_params['padding'][0] == 'valid':
+                        padding_tmp = [0,0]
+                        input_l = compute_output_conv2d(input_l,
+                                                    int(layer_params['num-filters'][0]), 
+                                                    (int(layer_params['filter-shape'][0]), int(layer_params['filter-shape'][0])), 
+                                                    (int(layer_params['stride'][0]), int(layer_params['stride'][0])), 
+                                                    padding_tmp, 
+                                                    dilation=[1,1]) 
+                    else: 
+                        #not sure about it!!
+                        input_l = (int(input_l[0]/int(layer_params['stride'][0])), 
+                                int(input_l[1]/int(layer_params['stride'][0])),
+                                int(layer_params['num-filters'][0]))
+                    
+                    input_l = compute_output_conv2d(input_l,
+                                                    int(layer_params['num-filters'][0]), 
+                                                    (int(layer_params['filter-shape'][0]), int(layer_params['filter-shape'][0])), 
+                                                    (int(layer_params['stride'][0]), int(layer_params['stride'][0])), 
+                                                    padding_tmp, 
+                                                    dilation=[1,1])
+
+                    layers.extend([conv_layer, act_layer])
+
+                #batch-normalisation
+                #fix num_features
+                elif layer_type == 'batch-norm':
+                    batch_norm = nn.BatchNorm2d(num_features=input_l[2], 
+                                                eps=1e-05, 
+                                                momentum=0.1, 
+                                                affine=True, 
+                                                track_running_stats=True, 
+                                                device=None, 
+                                                dtype=None)
+                    layers.append(batch_norm)
+
+                #average pooling layer
+                elif layer_type == 'pool-avg':
+                    pool_avg = nn.AvgPool2d(kernel_size = (int(layer_params['kernel-size'][0]), int(layer_params['kernel-size'][0])),
+                                                stride=int(layer_params['stride'][0]), 
+                                                padding=0, #need to be fixed 
+                                                ceil_mode=False, 
+                                                count_include_pad=True, 
+                                                divisor_override=None)
+                    layers.append(pool_avg)
+
+                #max pooling layer
+                elif layer_type == 'pool-max':
+
+                    pool_max = nn.MaxPool2d(kernel_size = (int(layer_params['kernel-size'][0]), int(layer_params['kernel-size'][0])), 
+                                            stride = int(layer_params['stride'][0]), 
+                                            padding= 0, 
+                                            dilation=1, 
+                                            return_indices=False, 
+                                            ceil_mode=False)
+                    layers.append(pool_max)
 
 
-    def get_learning(self, learning):
+                #dropout layer
+                elif layer_type == 'dropout':
+                    dropout = nn.Dropout2d(p=float(layer_params['rate'][0]), 
+                                        inplace=False)
+
+                    layers.append(dropout)
+
+
+                #fully-connected layer
+                elif layer_type == 'fc':
+                    fc = nn.Linear(in_features = input_l, 
+                                out_features = int(layer_params['num-units'][0]), 
+                                bias=eval(layer_params['bias'][0]), 
+                                device=None, 
+                                dtype=None)
+                    act_layer = get_act(layer_params['act'][0])
+                    layers.extend([fc,act_layer])
+                    input_l = int(layer_params['num-units'][0])
+                #END ADD NEW LAYERS
+
+            """
+            #Connection between layers
+            for layer in keras_layers:
+                layer[1]['input'] = map(int, layer[1]['input'])
+
+
+            first_fc = True
+            data_layers = []
+            invalid_layers = []
+
+            for layer_idx, layer in enumerate(layers):
+                
+                try:
+                    if len(keras_layers[layer_idx][1]['input']) == 1:
+                        if keras_layers[layer_idx][1]['input'][0] == -1:
+                            data_layers.append(layer(inputs))
+                        else:
+                            if keras_layers[layer_idx][0] == 'fc' and first_fc:
+                                first_fc = False
+                                flatten = keras.layers.Flatten()(data_layers[keras_layers[layer_idx][1]['input'][0]])
+                                data_layers.append(layer(flatten))
+                                continue
+
+                            data_layers.append(layer(data_layers[keras_layers[layer_idx][1]['input'][0]]))
+
+                    else:
+                        #Get minimum shape: when merging layers all the signals are converted to the minimum shape
+                        minimum_shape = input_size[0]
+                        for input_idx in keras_layers[layer_idx][1]['input']:
+                            if input_idx != -1 and input_idx not in invalid_layers:
+                                if data_layers[input_idx].shape[-3:][0] < minimum_shape:
+                                    minimum_shape = int(data_layers[input_idx].shape[-3:][0])
+
+                        #Reshape signals to the same shape
+                        merge_signals = []
+                        for input_idx in keras_layers[layer_idx][1]['input']:
+                            if input_idx == -1:
+                                if inputs.shape[-3:][0] > minimum_shape:
+                                    actual_shape = int(inputs.shape[-3:][0])
+                                    merge_signals.append(keras.layers.MaxPooling2D(pool_size=(actual_shape-(minimum_shape-1), actual_shape-(minimum_shape-1)), strides=1)(inputs))
+                                else:
+                                    merge_signals.append(inputs)
+
+                            elif input_idx not in invalid_layers:
+                                if data_layers[input_idx].shape[-3:][0] > minimum_shape:
+                                    actual_shape = int(data_layers[input_idx].shape[-3:][0])
+                                    merge_signals.append(keras.layers.MaxPooling2D(pool_size=(actual_shape-(minimum_shape-1), actual_shape-(minimum_shape-1)), strides=1)(data_layers[input_idx]))
+                                else:
+                                    merge_signals.append(data_layers[input_idx])
+
+                        if len(merge_signals) == 1:
+                            merged_signal = merge_signals[0]
+                        elif len(merge_signals) > 1:
+                            merged_signal = keras.layers.concatenate(merge_signals)
+                        else:
+                            merged_signal = data_layers[-1]
+
+                        data_layers.append(layer(merged_signal))
+                except ValueError as e:
+                    data_layers.append(data_layers[-1])
+                    invalid_layers.append(layer_idx)
+                    if DEBUG:
+                        print(keras_layers[layer_idx][0])
+                        print(e)
+
+            """
+            model =  torch.nn.Sequential(*layers)
+    
+            
+            if DEBUG == 1:
+                input_debug =(input_size[2],input_size[0],input_size[1]) #summary() wants channels as first element
+                summary(model,input_debug,device ='cpu')
+
+            return (model,input_l)
+
+    def assemble_model(self):
+        """
+            Merge in a torch module the sequential blocks of feature and classification
+
+            Parameters:
+            -----------
+                feat_pheno: str
+                        feature phenotype
+                class_pheno: str
+                        classification phenotype 
+
+        """
+        self.features = self.get_layers(self.feat_pheno)
+        self.classification = self.get_layers(self.class_pheno)
+        feat_seq, feat_output = self.assemble_block(self.features, self.input_shape)
+        new_input = np.prod(feat_output)
+        class_seq, new_input = self.assemble_block(self.classification,new_input)
+        last_layer = torch.nn.Sequential(torch.nn.Linear(new_input,N_CLASSES)) #correct input!!!
+        newNN = genNN(feat_seq, class_seq,last_layer)
+        return newNN
+
+    def get_learning(self):
         """
             Parses the phenotype corresponding to the learning
             Auxiliary function of the assemble_optimiser function
             Parameters
             ----------
-            learning : str
-                learning phenotype of the individual
+
             Returns
             -------
             learning_params : dict
                 learning parameters
         """
 
-        raw_learning = learning.split(' ')
+        raw_learning = self.learn_pheno.split(' ')
 
         idx = 0
         learning_params = {}
@@ -174,221 +450,39 @@ class Evaluator:
                     learning_params[_key_] = learning_params[_key_][0]
 
         return learning_params
-    def assemble_network(self, torch_layers, input_size):
+
+
+    def assemble_optimiser(self, model):
         """
-            Maps the layers phenotype into a keras model
+            Maps the learning into a torch optimiser
             Parameters
             ----------
-            keras_layers : list
-                output from get_layers
-            input_size : tuple
-                network input shape
+            model : torch.nn.Model
+                   model on which we're going to use the optimizer
             Returns
             -------
-            model : keras.models.Model
-                keras trainable model
+            optimiser : torch.optimizers.Optimizer
+                torch optimiser that will be later used to train the model
         """
 
-        #input layer
-        input_l = input_size
-
-        #Create layers -- ADD NEW LAYERS HERE
-        layers = []
-        for layer_type, layer_params in torch_layers:
-            if DEBUG == 0:
-                print(f'layer_type: {layer_type}')
-            #convolutional layer
-            if layer_type == 'conv':
-                conv_layer= nn.Conv2d(in_channels = input_l[2], 
-                                      out_channels = int(layer_params['num-filters'][0]), # not sure about it 
-                                      kernel_size = (int(layer_params['filter-shape'][0]), int(layer_params['filter-shape'][0])), 
-                                      stride= (int(layer_params['stride'][0]), int(layer_params['stride'][0])), 
-                                      padding= layer_params['padding'][0], 
-                                      dilation=1, 
-                                      groups=1, 
-                                      bias=eval(layer_params['bias'][0]), 
-                                      padding_mode='zeros', 
-                                      device=None, 
-                                      dtype=None)
-                
-                act_layer = get_act(layer_params['act'][0])
-                
-                # if padding is same we need to compute so that input shape = output shape
-                if layer_params['padding'][0] == 'valid':
-                    padding_tmp = [0,0] 
-                else: 
-                    raise Exception("sorry didn't implemented this case yet")
-
-                input_l = compute_output_conv2d(input_l,
-                                                int(layer_params['num-filters'][0]), 
-                                                (int(layer_params['filter-shape'][0]), int(layer_params['filter-shape'][0])), 
-                                                (int(layer_params['stride'][0]), int(layer_params['stride'][0])), 
-                                                padding_tmp, 
-                                                dilation=[1,1])
-
-                layers.extend([conv_layer, act_layer])
-
-            #batch-normalisation
-            #fix num_features
-            elif layer_type == 'batch-norm':
-                batch_norm = nn.BatchNorm2d(num_features, 
-                                            eps=1e-05, 
-                                            momentum=0.1, 
-                                            affine=True, 
-                                            track_running_stats=True, 
-                                            device=None, 
-                                            dtype=None)
-                layers.append(batch_norm)
-
-            #average pooling layer
-            elif layer_type == 'pool-avg':
-                pool_avg = nn.AvgPool2d(kernel_size = (int(layer_params['kernel-size'][0]), int(layer_params['kernel-size'][0])),
-                                              stride=int(layer_params['stride'][0]), 
-                                              padding=0, #need to be fixed 
-                                              ceil_mode=False, 
-                                              count_include_pad=True, 
-                                              divisor_override=None)
-                layers.append(pool_avg)
-
-            #max pooling layer
-            elif layer_type == 'pool-max':
-
-                pool_max = nn.MaxPool2d(kernel_size = (int(layer_params['kernel-size'][0]), int(layer_params['kernel-size'][0])), 
-                                        stride = int(layer_params['stride'][0]), 
-                                        padding= layer_params['padding'][0], 
-                                        dilation=1, 
-                                        return_indices=False, 
-                                        ceil_mode=False)
-                layers.append(pool_max)
-
-
-            #dropout layer
-            elif layer_type == 'dropout':
-                dropout = nn.Dropout2d(p=float(layer_params['rate'][0]), 
-                                       inplace=False)
-
-                layers.append(dropout)
-
-
-            """
-            #fully-connected layer
-            elif layer_type == 'fc':
-                fc = nn.Linear(in_features, 
-                               out_features, 
-                               bias=True, 
-                               device=None, 
-                               dtype=None)
-                layers.append(fc)
-            """
-            #END ADD NEW LAYERS
-
-        """
-        #Connection between layers
-        for layer in keras_layers:
-            layer[1]['input'] = map(int, layer[1]['input'])
-
-
-        first_fc = True
-        data_layers = []
-        invalid_layers = []
-
-        for layer_idx, layer in enumerate(layers):
-            
-            try:
-                if len(keras_layers[layer_idx][1]['input']) == 1:
-                    if keras_layers[layer_idx][1]['input'][0] == -1:
-                        data_layers.append(layer(inputs))
-                    else:
-                        if keras_layers[layer_idx][0] == 'fc' and first_fc:
-                            first_fc = False
-                            flatten = keras.layers.Flatten()(data_layers[keras_layers[layer_idx][1]['input'][0]])
-                            data_layers.append(layer(flatten))
-                            continue
-
-                        data_layers.append(layer(data_layers[keras_layers[layer_idx][1]['input'][0]]))
-
-                else:
-                    #Get minimum shape: when merging layers all the signals are converted to the minimum shape
-                    minimum_shape = input_size[0]
-                    for input_idx in keras_layers[layer_idx][1]['input']:
-                        if input_idx != -1 and input_idx not in invalid_layers:
-                            if data_layers[input_idx].shape[-3:][0] < minimum_shape:
-                                minimum_shape = int(data_layers[input_idx].shape[-3:][0])
-
-                    #Reshape signals to the same shape
-                    merge_signals = []
-                    for input_idx in keras_layers[layer_idx][1]['input']:
-                        if input_idx == -1:
-                            if inputs.shape[-3:][0] > minimum_shape:
-                                actual_shape = int(inputs.shape[-3:][0])
-                                merge_signals.append(keras.layers.MaxPooling2D(pool_size=(actual_shape-(minimum_shape-1), actual_shape-(minimum_shape-1)), strides=1)(inputs))
-                            else:
-                                merge_signals.append(inputs)
-
-                        elif input_idx not in invalid_layers:
-                            if data_layers[input_idx].shape[-3:][0] > minimum_shape:
-                                actual_shape = int(data_layers[input_idx].shape[-3:][0])
-                                merge_signals.append(keras.layers.MaxPooling2D(pool_size=(actual_shape-(minimum_shape-1), actual_shape-(minimum_shape-1)), strides=1)(data_layers[input_idx]))
-                            else:
-                                merge_signals.append(data_layers[input_idx])
-
-                    if len(merge_signals) == 1:
-                        merged_signal = merge_signals[0]
-                    elif len(merge_signals) > 1:
-                        merged_signal = keras.layers.concatenate(merge_signals)
-                    else:
-                        merged_signal = data_layers[-1]
-
-                    data_layers.append(layer(merged_signal))
-            except ValueError as e:
-                data_layers.append(data_layers[-1])
-                invalid_layers.append(layer_idx)
-                if DEBUG:
-                    print(keras_layers[layer_idx][0])
-                    print(e)
-
-        """
-        model =  torch.nn.Sequential(*layers)
-  
-        
-        if DEBUG == 0:
-            input_debug =(input_size[2],input_size[0],input_size[1]) #summary() wants channels as first element
-            summary(model,input_debug,device ='cpu')
-
-        return model
-    
-
-
-    def assemble_optimiser(self, learning, model):
-        """
-            Maps the learning into a keras optimiser
-            Parameters
-            ----------
-            learning : dict
-                output of get_learning
-            Returns
-            -------
-            optimiser : keras.optimizers.Optimizer
-                keras optimiser that will be later used to train the model
-        """
-
+        learning = self.get_learning()
         if learning['learning'] == 'rmsprop':
             return torch.optim.RMSprop(model.parameters(),
-                                       lr = float(learning['lr']),
-                                       rho = float(learning['rho']),
-                                       decay = float(learning['decay']))
+                                    lr = float(learning['lr']),
+                                    rho = float(learning['rho']),
+                                    decay = float(learning['decay']))
                     
         
         elif learning['learning'] == 'gradient-descent':
             return torch.optim.SGD(model.parameters(), 
-                                   lr= float(learning['lr']), 
-                                   momentum = float(learning['momentum']), 
-                                   dampening=0, 
-                                   weight_decay = float(learning['decay']), 
-                                   nesterov= bool(learning['nesterov']), 
-                                   maximize=False, 
-                                   foreach=None, 
-                                   differentiable=False)
+                                lr= float(learning['lr']), 
+                                momentum = float(learning['momentum']), 
+                                dampening=0, 
+                                weight_decay = float(learning['decay']), 
+                                nesterov= bool(learning['nesterov']), 
+                                maximize=False, 
+                                foreach=None, 
+                                differentiable=False)
 
 
         elif learning['learning'] == 'adam':
@@ -403,7 +497,570 @@ class Evaluator:
                                     capturable=False, 
                                     differentiable=False, 
                                     fused=False)
+
+
+    def _len(self):
+        x =  len(self.features) + len(self.classification) + 1
+        return  x 
+
+    def len_features(self):
+        x = len(self.features)
+        return x
+        
+    def len_classification(self):
+        x = len(self.classification) 
+        return x  
+
+    def GA_encoding(self, i):
+        "Give the module at position i"
+        if i < self.len_features():
+            return self.features[i]
+        elif i < self.len_features() + self.len_classification():
+            return self.classification[i - self.len_features() ]
+        elif i == self.len_features() + self.len_classification():
+            return self.last_layer[0]
+        else:
+            return self.last_layer[0]
+
+    def init_random_channel(self, C_in, C_out, len):
+        tmp = C_in
+        channels = []
+        for i in range(len-1):
+            out  = np.random.randint(7,30)
+            channels.append( (tmp, out ) )
+            tmp = out
+
+        channels.append((tmp, C_out)) 
+        return channels
+    
+    def compute_shape_features(self, input_shape = 32):
+        "like the forward pass, compute the output shape of the features block"
+        output_shape = input_shape
+        for i in range(self.len_features()):
+            output_shape = self.features[i].compute_shape(output_shape)
+        return output_shape
+
+    def get(self):
+        return self.GA_encoding
+        
+    def print(self):
+        print("Net encoding len:", self._len())
+        for i in range(self._len()):
+            print( self.GA_encoding(i).print())
+
+    def print_GAlevel(self):
+        "print only if the module is FEATURES or CLASSIFICATION"
+        print("Net len:", self._len())
+        for i in range(self._len()):
+            print("-",i, self.GA_encoding(i).M_type, ' ',self.GA_encoding(i).param['input_channels'], ' ', self.GA_encoding(i).param['output_channels'])
+
+
+    def fix_channels(self, cut1, cut2):
+        "Given a new list of modules between cut1 and cut2, fix the channels of the modules"
+        if cut1 != 0:
+            
+            c_out = self.GA_encoding(cut1-1).param['output_channels']
+            c_in = self.GA_encoding(cut1).param['input_channels']
+            new = min(c_in, c_out)
+            self.GA_encoding(cut1-1).fix_channels(c_out = new)
+            self.GA_encoding(cut1).fix_channels(c_in = new)
+
+            c_out = self.GA_encoding(cut2-1).param['output_channels']
+            c_in = self.GA_encoding(cut2).param['input_channels']
+            new = min(c_in, c_out)
+            self.GA_encoding(cut2-1).fix_channels(c_out = new)
+            self.GA_encoding(cut2).fix_channels(c_in = new)
+            
+        # fix in channels of the first classification block
+        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
+        self.classification[0].fix_channels(c_in = last_in)
+
+
+
+
+class Module:
+    """
+        GA_encoding class, unit of the outer-level genotype
+        Attributes
+        ----------
+            m_type : str
+                non-terminal symbol
+            min_expansions : int
+                minimum expansions of the block
+            max_expansions : int
+                maximum expansions of the block
+            layers : list
+                list of layers of the module
+
+        Methods
+        ----------
+            initialise(grammar, reuse)
+                        Randomly creates a module
+            len(self)
+                Number of layers
+            get(self)
+                M_type, num of layers
+    """
+
+    def __init__(self, m_type, min_expansions, max_expansions):
+        
+        self.module = m_type
+        self.min_expansions = min_expansions
+        self.max_expansions = max_expansions
+        #self.levels_back = levels_back
+        self.layers = []
+        #self.connections = {}        
+    
+    def initialise(self, grammar, reuse, init_max):
+        """
+            Randomly creates a module
+            Parameters
+            ----------
+            grammar : Grammar
+                grammar instace that stores the expansion rules
+            reuse : float
+                likelihood of reusing an existing layer
+            Returns
+            -------
+            score_history : dict
+                training data: loss and accuracy
+        """
+        #for later purpose init_max should be of lenght 3, each a entry for a type of module
+        num_expansions = init_max[self.module]
+
+        #Initialise layers
+        for idx in range(num_expansions):
+            if idx>0 and random.random() <= reuse:
+                r_idx = random.randint(0, idx-1)
+                self.layers.append(self.layers[r_idx])
+            else:
+                self.layers.append(grammar.initialise(self.module))
+
+        """"
+        Now all the connections are feed-forward, must add skip connections!!!
+        #Initialise connections: feed-forward and allowing skip-connections
+        self.connections = {}
+        for layer_idx in range(num_expansions):
+            if layer_idx == 0:
+                #the -1 layer is the input
+                self.connections[layer_idx] = [-1,]
+            else:
+                connection_possibilities = list(range(max(0, layer_idx-self.levels_back), layer_idx-1))
+                if len(connection_possibilities) < self.levels_back-1:
+                    connection_possibilities.append(-1)
+
+                sample_size = random.randint(0, len(connection_possibilities))
+                
+                self.connections[layer_idx] = [layer_idx-1] 
+                if sample_size > 0:
+                    self.connections[layer_idx] += random.sample(connection_possibilities, sample_size)
+        """
+
+    def len(self):
+        return len(self.layers)  
+           
+    def get(self):
+        return self.module, self.layers
+
+    """
+    def print(self): #print the GA_encoding?
+        print(self.M_type)
+        for i in range(len(self.layers)):
+            print( self.layers[i].get())
+        print("param: ", self.param)
+    """
+
+class Evaluator:
+    """
+        Stores the dataset, maps the phenotype into a trainable model, and
+        evaluates it
+        Attributes
+        ----------
+        dataset : dict
+            dataset instances and partitions
+        fitness_metric : function
+            fitness_metric (y_true, y_pred)
+            y_pred are the confidences
+        Methods
+        -------
+
+        evaluate(phenotype, load_prev_weights, weights_save_path, parent_weights_path,
+                 train_time, num_epochs, datagen=None, input_size=(32, 32, 3))
+            evaluates the keras model using the keras optimiser
+        testing_performance(self, model_path)
+            compute testing performance of the model
+    """
+
+    def __init__(self,dataset, fitness_metric):
+        """
+            Creates the Evaluator instance and loads the dataset.
+            Parameters
+            ----------
+            dataset : str
+                dataset to be loaded
+        """
+        self.dataset = load_dataset(dataset)
+        self.fitness_metric = fitness_metric
+
+    def evaluate(self, phenotype, load_prev_weights, weights_save_path, parent_weights_path,\
+                train_time, num_epochs, datagen=None, datagen_test = None, input_size=(32, 32, 3)):
+        """
+            Evaluates the keras model using the keras optimiser
+            Parameters
+            ----------
+            phenotype : str
+                individual phenotype
+            load_prev_weights : bool
+                resume training from a previous train or not
+            weights_save_path : str
+                path where to save the model weights after training
+            parent_weights_path : str
+                path to the weights of the previous training
+            train_time : float
+                maximum training time
+            num_epochs : int
+                maximum number of epochs
+            datagen : keras.preprocessing.image.ImageDataGenerator
+                Data augmentation method image data generator
+            input_size : tuple
+                dataset input shape
+                
+            Returns
+            -------
+            score_history : dict
+                training data: loss and accuracy
+        """
+
+        model_phenotype, learning_phenotype = phenotype.split('learning:')
+        learning_phenotype = 'learning:'+learning_phenotype.rstrip().lstrip()
+        model_phenotype = model_phenotype.rstrip().lstrip().replace('  ', ' ')
+
+        keras_layers = self.get_layers(model_phenotype)
+        keras_learning = self.get_learning(learning_phenotype)
+        batch_size = int(keras_learning['batch_size'])
+        
+        if load_prev_weights:
+            model = keras.models.load_model(parent_weights_path.replace('.hdf5', '.h5'))
+
+        else:
+            model = self.assemble_network(keras_layers, input_size)
+
+            opt = self.assemble_optimiser(keras_learning)
+            model.compile(loss='categorical_crossentropy',
+                          optimizer=opt,
+                          metrics=['accuracy'])
+
+        #early stopping
+        early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=int(keras_learning['early_stop']))
+
+        #time based stopping
+        time_stop = TimedStopping(seconds=train_time, verbose=DEBUG)
+
+        #save individual with the lowest validation loss
+        monitor = ModelCheckpoint(weights_save_path, monitor='val_loss', verbose=DEBUG, save_best_only=True)
+
+        trainable_count = int(np.sum([backend.count_params(p) for p in set(model.trainable_weights)]))
+
+        if datagen is not None:
+            score = model.fit_generator(datagen.flow(self.dataset['evo_x_train'],
+                                                 self.dataset['evo_y_train'],
+                                                 batch_size=batch_size),
+                                        steps_per_epoch=(self.dataset['evo_x_train'].shape[0]//batch_size),
+                                        epochs=int(keras_learning['epochs']),
+                                        validation_data=(datagen_test.flow(self.dataset['evo_x_val'], self.dataset['evo_y_val'], batch_size=batch_size)),
+                                        validation_steps = (self.dataset['evo_x_val'].shape[0]//batch_size),
+                                        callbacks = [early_stop, time_stop, monitor],
+                                        initial_epoch = num_epochs,
+                                        verbose= DEBUG)
+        else:
+            score = model.fit(x = self.dataset['evo_x_train'], y = self.dataset['evo_y_train'],
+                              batch_size = batch_size,
+                              epochs = int(keras_learning['epochs']),
+                              steps_per_epoch=(self.dataset['evo_x_train'].shape[0]//batch_size),
+                              validation_data=(self.dataset['evo_x_val'], self.dataset['evo_y_val']),
+                              callbacks = [early_stop, time_stop, monitor],
+                              initial_epoch = num_epochs,
+                              verbose = DEBUG)
+
+
+        #load weights with the lowest val loss
+        if os.path.isfile(weights_save_path):
+            model.load_weights(weights_save_path)
+
+        #save final moodel to file
+        model.save(weights_save_path.replace('.hdf5', '.h5'))
+
+        #measure test performance
+        if datagen_test is None:
+            y_pred_test = model.predict(self.dataset['evo_x_test'], batch_size=batch_size, verbose=0)
+        else:
+            y_pred_test = model.predict_generator(datagen_test.flow(self.dataset['evo_x_test'], batch_size=100, shuffle=False), steps =self.dataset['evo_x_test'].shape[0]//100, verbose=DEBUG)
+
+        accuracy_test = self.fitness_metric(self.dataset['evo_y_test'], y_pred_test)
+
+        if DEBUG:
+            print phenotype, accuracy_test
+
+        score.history['trainable_parameters'] = trainable_count
+        score.history['accuracy_test'] = accuracy_test
+
+        return score.history
+
+
+    def testing_performance(self, model_path):
+        """
+            Compute testing performance of the model
+            Parameters
+            ----------
+            model_path : str
+                Path to the model .h5 file
+            Returns
+            -------
+            accuracy : float
+                Model accuracy
+        """
+
+        model = keras.models.load_model(model_path)
+        y_pred = model.predict(self.dataset['x_test'])
+        accuracy = self.fitness_metric(self.dataset['y_test'], y_pred)
+        return accuracy
+
+
+"""
+Not sure on how to use this one
+def evaluate(args):
+
+        Function used to deploy a new process to train a candidate solution.
+        Each candidate solution is trained in a separe process to avoid memory problems.
+        Parameters
+        ----------
+        args : tuple
+            cnn_eval : Evaluator
+                network evaluator
+            phenotype : str
+                individual phenotype
+            load_prev_weights : bool
+                resume training from a previous train or not
+            weights_save_path : str
+                path where to save the model weights after training
+            parent_weights_path : str
+                path to the weights of the previous training
+            train_time : float
+                maximum training time
+            num_epochs : int
+                maximum number of epochs
+        Returns
+        -------
+        score_history : dict
+            training data: loss and accuracy
     
 
+    cnn_eval, phenotype, load_prev_weights, weights_save_path, parent_weights_path, train_time, num_epochs, datagen, datagen_test = args
+
+    try:
+        return cnn_eval.evaluate(phenotype, load_prev_weights, weights_save_path, parent_weights_path, train_time, num_epochs, datagen, datagen_test)
+    except tensorflow.errors.ResourceExhaustedError as e:
+        return None
+    """
+
+class Individual:
+    """
+        Candidate solution.
+        Attributes
+        ----------
+        network_structure : list
+            ordered list of tuples formated as follows 
+            [(non-terminal, min_expansions, max_expansions), ...]
+        output_rule : str
+            output non-terminal symbol
+        macro_rules : list
+            list of non-terminals (str) with the marco rules (e.g., learning)
+        modules : list
+            list of Modules (genotype) of the layers
+        output : dict
+            output rule genotype
+        macro : list
+            list of Modules (genotype) for the macro rules
+        phenotype : str
+            phenotype of the candidate solution
+        fitness : float
+            fitness value of the candidate solution
+        metrics : dict
+            training metrics
+        num_epochs : int
+            number of performed epochs during training
+        trainable_parameters : int
+            number of trainable parameters of the network
+        time : float
+            network training time
+        current_time : float
+            performed network training time
+        train_time : float
+            maximum training time
+        id : int
+            individual unique identifier
+        Methods
+        -------
+            initialise(grammar, levels_back, reuse)
+                Randomly creates a candidate solution
+            decode(grammar)
+                Maps the genotype to the phenotype
+            evaluate(grammar, cnn_eval, weights_save_path, parent_weights_path='')
+                Performs the evaluation of a candidate solution
+    """
+
+
+    def __init__(self, network_structure, macro_rules, output_rule, ind_id):
+        """
+            Parameters
+            ----------
+            network_structure : list
+                ordered list of tuples formated as follows 
+                [(non-terminal, min_expansions, max_expansions), ...]
+            macro_rules : list
+                list of non-terminals (str) with the marco rules (e.g., learning)
+            output_rule : str
+                output non-terminal symbol
+            ind_id : int
+                individual unique identifier
+        """
+
+
+        self.network_structure = network_structure
+        self.output_rule = output_rule
+        self.macro_rules = macro_rules
+        self.modules = []
+        self.output = None
+        self.macro = []
+        self.phenotype = None
+        self.fitness = None
+        self.metrics = None
+        self.num_epochs = None
+        self.trainable_parameters = None    
+        self.time = None    
+        self.current_time = 0   
+        self.train_time = 0 
+        self.id = ind_id    
+
+    def initialise(self, grammar, levels_back, reuse, init_max):    
+        """ 
+            Randomly creates a candidate solution   
+            Parameters  
+            ----------  
+            grammar : Grammar   
+                grammar instaces that stores the expansion rules    
+            levels_back : dict  
+                number of previous layers a given layer can receive as input    
+            reuse : float   
+                likelihood of reusing an existing layer 
+            Returns 
+            ------- 
+            candidate_solution : Individual 
+                randomly created candidate solution 
+        """ 
+
+        for non_terminal, min_expansions, max_expansions in self.network_structure: 
+            new_module = Module(non_terminal, min_expansions, max_expansions, levels_ba ck[non_terminal], min_expansions)
+            new_module.initialise(grammar, reuse, init_max) 
+
+            self.modules.append(new_module) 
+
+        #Initialise output
+        self.output = grammar.initialise(self.output_rule)
+
+        # Initialise the macro structure: learning, data augmentation, etc.
+        for rule in self.macro_rules:
+            self.macro.append(grammar.initialise(rule))
+
+        return self
+
+
+    def decode(self, grammar):
+        """
+            Maps the genotype to the phenotype
+            Parameters
+            ----------
+            grammar : Grammar
+                grammar instaces that stores the expansion rules
+            Returns
+            -------
+            phenotype : str
+                phenotype of the individual to be used in the mapping to the keras model.
+        """
+
+        phenotype = ''
+        offset = 0
+        layer_counter = 0
+        for module in self.modules:
+            offset = layer_counter
+            for layer_idx, layer_genotype in enumerate(module.layers):
+                layer_counter += 1
+                phenotype += ' ' + grammar.decode(module.module, layer_genotype)+ ' input:'+",".join(map(str, np.array(module.connections[layer_idx])+offset))
+
+        phenotype += ' '+grammar.decode(self.output_rule, self.output)+' input:'+str(layer_counter-1)
+
+        for rule_idx, macro_rule in enumerate(self.macro_rules):
+            phenotype += ' '+grammar.decode(macro_rule, self.macro[rule_idx])
+
+        self.phenotype = phenotype.rstrip().lstrip()
+        return self.phenotype
+
+
+    def evaluate(self, grammar, cnn_eval, datagen, datagen_test, weights_save_path, parent_weights_path=''):
+        """
+            Performs the evaluation of a candidate solution
+            Parameters
+            ----------
+            grammar : Grammar
+                grammar instaces that stores the expansion rules
+            cnn_eval : Evaluator
+                Evaluator instance used to train the networks
+            datagen : keras.preprocessing.image.ImageDataGenerator
+                Data augmentation method image data generator
+        
+            weights_save_path : str
+                path where to save the model weights after training
+            parent_weights_path : str
+                path to the weights of the previous training
+            Returns
+            -------
+            fitness : float
+                quality of the candidate solutions
+        """
+
+        phenotype = self.decode(grammar)
+        start = time()
+        pool = Pool(processes=1)
+
+        load_prev_weights = True
+        if self.current_time == 0:
+            load_prev_weights = False
+
+        train_time = self.train_time - self.current_time
+
+        result = pool.apply_async(evaluate, [(cnn_eval, phenotype, load_prev_weights,\
+                                               weights_save_path, parent_weights_path,\
+                                               train_time, self.num_epochs, datagen, datagen_test)])
+
+        pool.close()
+        pool.join()
+        metrics = result.get()
+
+        if metrics is not None:
+            self.metrics = metrics
+            self.fitness = self.metrics['accuracy_test']
+            self.num_epochs += len(self.metrics['val_acc'])
+            self.trainable_parameters = self.metrics['trainable_parameters']
+            self.current_time += (self.train_time-self.current_time)
+        else:
+            self.metrics = None
+            self.fitness = -1
+            self.num_epochs = 0
+            self.trainable_parameters = -1
+            self.current_time = 0
+
+        self.time = time() - start
+
+        return self.fitness
 
 
