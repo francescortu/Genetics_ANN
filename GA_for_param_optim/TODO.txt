@@ -1,2 +1,9 @@
 TODO
-needs to update GRAMMAR for torch!
+-needs to update GRAMMAR for torch!
+
+-the input,output mapping doesn't work beacause there's 
+ some costraints on the joint values of differen fields (e.g padding and kernel)
+
+-Evaluator class should have dataloaders as attributes and optimizer and batch size should be given by learning_params and the should be 
+ attributes as well
+- All the classes in utlis.py doesn't have levels_back attributes because I didn't implementes yet 
