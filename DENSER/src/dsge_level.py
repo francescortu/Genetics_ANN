@@ -21,7 +21,7 @@ that is to say the layers inside each single module and their compatibility.
 '''
 
 MIN_KERNEL_SIZE = 1
-MAX_KERNEL_SIZE = 4
+MAX_KERNEL_SIZE = 3
 MIN_STRIDE = 1
 MAX_STRIDE = 3
             
@@ -70,7 +70,7 @@ class Layer:
             padding_size = np.random.randint(0,int(kernel_size/2)+1) # pad should be smaller than or equal to half of kernel size
             self.param = {"pool_type" : pool(np.random.randint(len(pool))), "kernel_size": kernel_size, "stride": stride_size, "padding": padding_size}
         elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
-            padding_size = np.random.randint(int(kernel_size/2), kernel_size)
+            padding_size = np.random.randint(int(kernel_size/2)+1, kernel_size+1)
             self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding_size}
         elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
             self.param = activation(np.random.randint(len(activation)))
@@ -160,104 +160,10 @@ class Module:
         return self.M_type, self.layers, self.param
 
     def print(self): #print the GA_encoding
-        print( self.M_type)
+        print(self.M_type)
         for i in range(len(self.layers)):
-            print( self.layers[i].get())
+            print(self.layers[i].get())
         print("param: ", self.param)
 
 
-        
-###################
-#    MUTATION      #
-###################
-
-"""
-In DENSER we have three types of mutation at the dsge level:
-
-* grammatical mutation: an expansion possibility is replaced by another one
-* integer mutation: an integer block is replaced by another one
-* float mutation: instead of randomly generating new values, a gaussian perturbation is applied 
-
-"""
-
-class mutation_type(Enum):
-    GRAMMATICAL = 0
-    INTEGER = 1
-    #FLOAT = 2
-
-def dsge_mutation(offspring):
-    "Mutation of the DSGE encoding."
-    mutation = mutation_type(np.random.randint(len(mutation_type)))
-    if mutation == mutation_type.GRAMMATICAL:
-        grammatical_mutation(offspring)
-    elif mutation == mutation_type.INTEGER:
-        integer_mutation(offspring)
-
-    #elif mutation == mutation_type.FLOAT:
-        #float_mutation(offspring)
-
-    return offspring
-
-def grammatical_mutation(offspring):
-    "Grammatical mutation of the DSGE encoding."
-    print("grammatical mutation")
-    #randomly choose a random gene
-    gene = np.random.randint(1, offspring._len())
-     
-    #identify the gene
-    gene_type = offspring.GA_encoding(gene).M_type
-    
-    if gene_type == module_types.FEATURES:
-        #choose a layer inside the gene
-        layer = np.random.randint(0, offspring.features[gene].len())
-        #identify the layer
-        type = offspring.features[gene].layers[layer].type
-        
-        new_layer = Layer(type, c_in = offspring.features[gene].param['input_channels'], c_out = offspring.features[gene].param['output_channels'])
-        # add the new layer
-        offspring.features[gene].layers[layer] = new_layer
-
-
-    elif gene_type == module_types.CLASSIFICATION:
-        #choose a layer inside the gene
-        layer = np.random.randint(0, offspring.classification[gene - offspring.len_features()].len())
-        #identify the layer
-        type = offspring.classification[gene - offspring.len_features()].layers[layer].type
-        
-        new_layer = Layer(type, c_in = offspring.classification[gene - offspring.len_features()].param['input_channels'], c_out = offspring.classification[gene - offspring.len_features()].param['output_channels'])
-        # add the new layer
-        offspring.classification[gene - offspring.len_features()].layers[layer] = new_layer
-    
-    else:
-        #choose a layer inside the gene
-        layer = np.random.randint(0, offspring.last_layer[0].len())
-        #identify the layer
-        type = offspring.last_layer[0].layers[layer].type
-        
-        new_layer = Layer(type, c_in = offspring.last_layer[0].param['input_channels'], c_out = offspring.last_layer[0].param['output_channels'])
-        # add the new layer
-        offspring.last_layer[0].layers[layer] = new_layer
-
-    return offspring
-
-def integer_mutation(offspring):
-    "Integer mutation of the DSGE encoding."
-    print("integer mutation")
-    #randomly choose a random gene
-    gene = np.random.randint(1, offspring._len())
-    
-    #identify the gene
-    gene_type = offspring.GA_encoding(gene).M_type
-    
-    #change expansion rules within the gene by creating a new module
-    new_module = Module(gene_type, c_in = offspring.GA_encoding(gene).param['input_channels'], c_out = offspring.GA_encoding(gene).param['output_channels'])
-    
-    #replace new gene
-    if gene_type == module_types.FEATURES:
-        offspring.features[gene] = new_module
-    elif gene_type == module_types.CLASSIFICATION:
-        offspring.classification[gene - offspring.len_features()] = new_module
-    
-    return offspring
-
-
+ 

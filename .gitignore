@@ -1,5 +1,8 @@
-Architecture_selection/data/
-Architecture_selection/.ipynb_checkpoints
-Architecture_selection/scripts/__pycache__
 GA_applied_to_CNN/data/
 GA_applied_to_CNN/.ipynb_checkpoints/
+DENSER/scripts/__pycache__/
+DENSER/tests/__pycache__/
+DENSER/__pycache__/
+DENSER/data/
+DENSER/results.csv
+DENSER/best_organism
