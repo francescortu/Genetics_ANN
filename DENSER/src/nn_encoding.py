@@ -1,4 +1,4 @@
-from src.ga_level import *
+from src.mutations import *
 
 
 class Net(nn.Module):
