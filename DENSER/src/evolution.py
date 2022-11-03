@@ -1,13 +1,21 @@
-from nn_encoding import *
+from src.nn_encoding import *
 from scripts.train import train, eval, test_model
 
+MUTATION_RATE = 33
+CROSSOVER_RATE = 70
 
 class evolution():
-    def __init__(self, population_size=10, holdout=1, mating=True, trainloader=None, testloader=None, batch_size=4):
+    def __init__(self, population_size=10, holdout=1, mating=True, dataset=None, batch_size=4):
         """
         initial function fun is a function to produce nets, used for the original population
         scoring_function must be a function which accepts a net as input and returns a float
         """
+        try:
+            trainloader, testloader, input_size, n_classes = dataset(batch_size)
+        except:
+            print("Error: dataset not found")
+            return
+
         self.trainloader = trainloader
         self.testloader = testloader
         self.batch_size = batch_size
@@ -17,9 +25,9 @@ class evolution():
         self.population = []
    
         for _ in range(self.population_size):
-            num_feat = np.random.randint(1, 10)
-            num_class = np.random.randint(1, 10)
-            self.population.append(Net_encoding(num_feat,num_class,1,10,28))
+            num_feat = np.random.randint(1, MAX_LEN_FEATURES)
+            num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
+            self.population.append(Net_encoding(num_feat, num_class, LAST_LAYER_SIZE, n_classes, input_size))
 
         self.get_best_organism()
         self.holdout = max(1, int(holdout * population_size))
@@ -39,8 +47,11 @@ class evolution():
                 parent_2_idx = parent_1_idx
             child1, child2 = GA_crossover(self.population[parent_1_idx], self.population[parent_2_idx])
             offspring = child1 if child1._len() < child2._len() else child2
-            offspring = GA_mutation(offspring)
-            offspring = dsge_mutation(offspring)
+    
+            if np.random.randint(0, 100) < MUTATION_RATE:
+                offspring = GA_mutation(offspring)
+            if np.random.randint(0, 100) < MUTATION_RATE:
+                offspring = dsge_mutation(offspring)
             new_population.append(offspring)
         
         self.population = new_population
