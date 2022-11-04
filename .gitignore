@@ -5,3 +5,11 @@ GA_applied_to_CNN/
 DENSER/__pycache__/
 DENSER/data/
 .vscode/
+GA_applied_to_CNN/data/
+GA_applied_to_CNN/.ipynb_checkpoints/
+DENSER/scripts/__pycache__/
+DENSER/tests/__pycache__/
+DENSER/__pycache__/
+DENSER/data/
+DENSER/results.csv
+DENSER/best_organism

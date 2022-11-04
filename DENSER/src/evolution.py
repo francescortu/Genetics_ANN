@@ -1,6 +1,8 @@
 from src.nn_encoding import *
 from scripts.train import train, eval, test_model
 
+MUTATION_RATE = 33
+CROSSOVER_RATE = 70
 
 class evolution():
     def __init__(self, population_size=10, holdout=1, mating=True, dataset=None, batch_size=4):
@@ -45,8 +47,11 @@ class evolution():
                 parent_2_idx = parent_1_idx
             child1, child2 = GA_crossover(self.population[parent_1_idx], self.population[parent_2_idx])
             offspring = child1 if child1._len() < child2._len() else child2
-            offspring = GA_mutation(offspring)
-            offspring = dsge_mutation(offspring)
+    
+            if np.random.randint(0, 100) < MUTATION_RATE:
+                offspring = GA_mutation(offspring)
+            if np.random.randint(0, 100) < MUTATION_RATE:
+                offspring = dsge_mutation(offspring)
             new_population.append(offspring)
         
         self.population = new_population

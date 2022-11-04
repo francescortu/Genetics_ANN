@@ -5,7 +5,7 @@ from src.evolution import evolution
 from torchsummary import summary
 
 import csv
-
+import sys
 import imageio
 from os import listdir
 
@@ -28,7 +28,12 @@ def test_evolution(dataset, batch_size):
         best_net = this_generation_best
         print("Generation ", i , "'s best network accuracy: ", score, "%")
         res.append([i, score, best_net._len()])
-    
+
+        """     with open('best_organism', 'w+') as d:
+        sys.stdout = d
+        best_net.print_dsge_level()
+        sys.stdout = original_stdout """
+        
     print("Best accuracy obtained: ", score)
     writer.writerows(res)
     f.close() 
