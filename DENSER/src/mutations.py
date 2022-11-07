@@ -223,9 +223,7 @@ def grammatical_mutation(offspring):
         # add the new layer
         offspring.last_layer[0].layers[layer] = new_layer
 
-    # fix in channels of the first classification block
-    last_in = (offspring.compute_shape_features(offspring.input_shape) ** 2) * offspring.features[-1].param['output_channels']
-    offspring.classification[0].fix_channels(c_in = last_in)
+    offspring.fix_first_classification()
 
     return offspring
 
@@ -250,9 +248,7 @@ def integer_mutation(offspring):
     else:
         offspring.last_layer[0] = new_module
 
-    # fix in channels of the first classification block
-    last_in = (offspring.compute_shape_features(offspring.input_shape) ** 2) * offspring.features[-1].param['output_channels']
-    offspring.classification[0].fix_channels(c_in = last_in)
+    offspring.fix_first_classification(offspring)
 
     return offspring
 

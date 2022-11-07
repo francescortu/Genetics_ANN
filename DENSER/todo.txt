@@ -18,3 +18,5 @@ Things yet to be done:
 * control maximum number of feature's and classification's block layers (classification was previously set to 10)
 
 * add crossover rate (~70%)
+
+* increase train set, decrease test set

@@ -12,6 +12,10 @@ from scripts import utils
 
 import copy
 
+from matplotlib import pyplot
+from math import cos, sin, atan
+import random
+
 
 '''
 
@@ -24,6 +28,8 @@ MIN_KERNEL_SIZE = 1
 MAX_KERNEL_SIZE = 3
 MIN_STRIDE = 1
 MAX_STRIDE = 3
+
+
             
 #####################
 # Layers definition #
@@ -165,5 +171,135 @@ class Module:
             print(self.layers[i].get())
         print("param: ", self.param)
 
+    
 
- 
+
+
+    ########################################
+    # Plot the neural network architecture
+    ########################################
+
+    def draw_features(self, start, length_f, last = None):
+        c_in = self.param['input_channels']
+        c_out = self.param['output_channels']
+        kernel_size = self.layers[0].param['kernel_size']
+        for i in range(int(c_out/3)):
+            x1 = 0.5 + i*0.2 + start
+            x2 = x1 + 5
+            x = [x1,x2,x2,x1]
+            y1 = -2.5+i*(-0.3)
+            y2 = 2.5 - i*0.3
+            y = [y1,y1,y2,y2]
+            trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#ba5b83', edgecolor='#803655', linewidth=0.8)
+            pyplot.gca().add_patch(trapezoid)
+        
+        
+        next = x2 + 9
+
+        if length_f <= 4: font_size = 6 
+        else:   font_size = int(32/length_f)
+        
+        plt.tick_params(axis='x', labelsize=10)
+        # get pooling type
+        pool_type = str(self.layers[2].param["pool_type"])[5:]
+        plt.text(x2+0.5, 5, f'POOL {pool_type}', fontsize=font_size, fontweight='bold',  color='black')
+
+
+        plt.annotate('', xy=(next, 0), xycoords='data',
+            xytext=(x2+0.6, 0), textcoords='data',
+            arrowprops=dict(facecolor='#474747', width=1.2, headwidth=4, headlength=4))
+        
+        
+        # get activation function type
+        activation_layer_type = str(self.layers[1].param)[11:]
+        plt.text(x1, y1 - 6, f'Conv2d + \n{activation_layer_type}', fontsize=font_size, fontweight='bold',  color='black')
+        plt.text(x1, y1 - 10, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color='black')
+
+        if last:
+            for i in range(10):
+                x1 = next + 3
+                x2 = x1 + 1
+                x = [x1,x2,x2,x1]
+                y1 = 5 - i*1
+                y2 = y1 - 1
+                y = [y1,y1,y2,y2]
+                trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#f2d585', edgecolor='#c9b069', linewidth=0.8)
+                pyplot.gca().add_patch(trapezoid)
+
+            plt.text(x1-0.3, y1 - 7, 'Flatten\n layer', fontsize=font_size, fontweight='bold',  color='black')
+            next = x2 + 9
+
+            self.add_label(0.5,x2, 'Feature extraction', font_size)
+
+
+        #update the start position
+        return next
+
+       
+
+    def draw_classification(self, start, length_c, length_f, index, node_in=None, last = None):
+        c_in = self.param['input_channels']
+        c_out = self.param['output_channels']
+        if index == 0:
+            c_in = 10
+
+        circle_radius = 0.8
+        node_input = []
+        node_output = []
+        if node_in is None:
+            color = random.choice(['#154e7a', '#3d9dad', '#415fba'])
+            for i in range(c_in):
+                x, y = start, (circle_radius*5)*(i-c_in/2)
+                circle = pyplot.Circle((x,y), radius=circle_radius, facecolor=color, linewidth=1.5, zorder=2)
+                pyplot.gca().add_patch(circle)
+                node_input.append({'x': x, 'y': y})
+        else:
+            node_input = node_in
+
+
+        if index != length_c : # ifwe are not in the last layer
+            c_out = int(c_out* 7/30) + 1
+            
+        color = random.choice(['#154e7a', '#3d9dad', '#415fba'])
+
+        for i in range(c_out):
+            x, y = start + 8, (circle_radius*5)*(i-c_out/2)
+            circle = pyplot.Circle((x,y), radius= circle_radius,facecolor=color,  linewidth=1.5, zorder=2)
+            pyplot.gca().add_patch(circle)
+            node_output.append({'x': x, 'y': y})
+
+        # add connections
+        for node1 in node_input:
+            for node2 in node_output:
+                self.line_between_two_nodes(node1, node2) 
+        
+        # font size
+        if length_f <= 4: font_size = 6 
+        else:   font_size = int(32/length_f)
+
+        # if first layer add connection between flatten and input nodes
+        if index == 0:
+            for i,node in enumerate(node_input):
+                self.line_between_two_nodes(node, {'x': start - 9, 'y': -4.5 + i})
+
+            end = start + 8*(length_c+1)
+            self.add_label(start, end, 'Classification', font_size)
+
+
+        node_input = node_output
+        next = start + 8
+        return next, node_input
+
+
+    def line_between_two_nodes(self, node1, node2):
+        line = pyplot.Line2D((node1['x'], node2['x']), (node1['y'], node2['y']), color='#333232', linewidth=0.5, zorder=-1)
+        pyplot.gca().add_line(line)
+
+    def add_label(self, x1, x2, name, font_size):
+        line = pyplot.Line2D((x1, x2), (-25, -25), color='#333232', linewidth=0.5)
+        line1 = pyplot.Line2D((x1, x1), (-25, -22), color='#333232', linewidth=0.5)
+        line2 = pyplot.Line2D((x2, x2), (-25, -22), color='#333232', linewidth=0.5)
+        pyplot.gca().add_line(line)
+        pyplot.gca().add_line(line1)
+        pyplot.gca().add_line(line2)
+        plt.text(x1 + (x2 -x1)/3, -27, name,  fontweight='bold', fontsize=font_size,  color='black')
