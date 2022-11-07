@@ -104,8 +104,10 @@ class Net_encoding:
         for i in range(self._len()):
             print("-",i, self.GA_encoding(i).M_type, ' ',self.GA_encoding(i).param['input_channels'], ' ', self.GA_encoding(i).param['output_channels'])
 
-
-
+    def fix_first_classification(self):
+        # fix in channels of the first classification block
+        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
+        self.classification[0].fix_channels(c_in = last_in)
 
     def fix_channels(self, cut1, cut2):
         "Given a new list of modules between cut1 and cut2, fix the channels of the modules"
@@ -131,9 +133,7 @@ class Net_encoding:
             self.GA_encoding(cut2-1).fix_channels(c_out = new)
             self.GA_encoding(cut2).fix_channels(c_in = new)
 
-        # fix in channels of the first classification block
-        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
-        self.classification[0].fix_channels(c_in = last_in)
+        self.fix_first_classification()
 
 
     def fix_channels_deletion(self, cut):
@@ -147,11 +147,35 @@ class Net_encoding:
         
         else:   # if cut1 == 0 we are at the beginning of the network
             self.GA_encoding(cut).fix_channels(c_in = 1) # we just need to change the input channels of first module
-            
-        # fix in channels of the first classification block
-        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
-        self.classification[0].fix_channels(c_in = last_in)
+        
+        self.fix_first_classification()
 
+    def draw(self, gen):
+        "draw the network"
+        global START
+        START = 0
+        node_input = None
+        
+        length_f = self.len_features()
+        length_c = self.len_classification()
+        for i in range(self._len()):
+            if self.GA_encoding(i).M_type == module_types.FEATURES:
+                is_last = False
+                if i == self.len_features() - 1:
+                    is_last = True
+                START = self.GA_encoding(i).draw_features(START, length_f, last = is_last)
+
+            elif self.GA_encoding(i).M_type == module_types.CLASSIFICATION:
+                index = i - self.len_features()
+                START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, index, node_in = node_input)
+            else:
+                START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, length_c, node_in = node_input)
+
+        pyplot.axis('equal')
+        plt.axis('off')
+        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300)
+        plt.close()
+        #pyplot.show()
 
 ##############################################
 # CROSSOVER

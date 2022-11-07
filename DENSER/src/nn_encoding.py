@@ -46,3 +46,6 @@ class Net(nn.Module):
  
     def len(self):
         return len(self.layer_list)
+
+    
+    
