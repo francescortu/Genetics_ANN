@@ -13,7 +13,7 @@ This file contains all the functions which are used to handle the GA level.
 '''
 MAX_LEN_FEATURES = 10
 MAX_LEN_CLASSIFICATION = 3 # 2 in DENSER
-LAST_LAYER_SIZE = 1
+
 
 class Net_encoding:
     "Describe the encoding of a network."

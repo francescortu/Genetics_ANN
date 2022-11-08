@@ -1,6 +1,6 @@
 from src.nn_encoding import *
 from scripts.train import train, eval
-from scripts.dataloader import MNIST
+from scripts.dataloader import MNIST, cifar10
 from src.evolution import evolution
 from torchsummary import summary
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # load dataset for the following test function
     batch_size = 4
 
-    dataset = MNIST
+    dataset = cifar10
     print("\n\n Evolution of a population of networks: \n\n")
     test_evolution(dataset, batch_size)
 
