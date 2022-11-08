@@ -1,6 +1,6 @@
 from src.evolution import *
 from scripts.train import test_model
-from scripts.dataloader import MNIST
+from scripts.dataloader import MNIST, cifar10
 
 
 # set std param for MNIST dataset on which we will test the network
@@ -8,7 +8,7 @@ DATASET = MNIST
 BATCH_SIZE = 4
 NUM_CLASSES = 10
 INPUT_SIZE = 28
-INPUT_CHANNELS = 1
+INPUT_CHANNELS = 1 #3 for CIFAR10
 
 MAX_LEN_FEATURES = 3
 MAX_LEN_CLASSIFICATION = 2
