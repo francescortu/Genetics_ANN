@@ -35,6 +35,7 @@ def GA_mutation(offspring, type=None):
     if type == None:
         type = np.random.choice(list(ga_mutation_type))
     print("GA mutation type ", type)
+    
     if type == ga_mutation_type.ADDITION:
         cut = choose_cut(offspring)
         if cut is not None:
@@ -176,9 +177,6 @@ def dsge_mutation(offspring, type = None):
     elif type == dsge_mutation_type.INTEGER:
         integer_mutation(offspring)
 
-    #elif mutation == mutation_type.FLOAT:
-        #float_mutation(offspring)
-
     return offspring
 
 def grammatical_mutation(offspring):
@@ -248,7 +246,7 @@ def integer_mutation(offspring):
     else:
         offspring.last_layer[0] = new_module
 
-    offspring.fix_first_classification(offspring)
+    offspring.fix_first_classification()
 
     return offspring
 
