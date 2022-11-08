@@ -90,7 +90,10 @@ class Layer:
         
     def compute_shape(self, input_shape):
         if self.type == layer_type.CONV or self.type == layer_type.POOLING:
-            return utils.compute_output_conv2d(input_shape, kernel_size=self.param['kernel_size'], stride=self.param['stride'], padding=self.param['padding'])
+            if self.type == layer_type.POOLING and self.param["pool_type"] == pool.AVG:
+                return utils.compute_output_avgpool2d(input_shape, self.param["kernel_size"], self.param["stride"], self.param["padding"])
+            else:
+                return utils.compute_output_conv2d(input_shape, kernel_size=self.param['kernel_size'], stride=self.param['stride'], padding=self.param['padding'])
         else:
             return input_shape
             
@@ -163,13 +166,15 @@ class Module:
             self.param['input_channels'] = c_in
 
     def get(self):
-        return self.M_type, self.layers, self.param
+        return self.M_type, self.layers
 
-    def print(self): #print the GA_encoding
-        print(self.M_type)
+    def print(self, index=None): #print the GA_encoding
+        print(f"\n module: {index}")
+        print(f"{self.M_type}")
         for i in range(len(self.layers)):
             print(self.layers[i].get())
         print("param: ", self.param)
+  
 
     
 
