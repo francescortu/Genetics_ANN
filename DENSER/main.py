@@ -44,15 +44,15 @@ def generate_random_net():
     return Net_encoding(num_feat, num_class, LAST_LAYER_SIZE, 10, 28)
 
 def create_random_gif():
-    #for i in range(8):
-    enc = generate_random_net()
-    enc.draw(0)
+    for i in range(8):
+        enc = generate_random_net()
+        enc.draw(i)
 
     # Build GIF
-    """ with imageio.get_writer('mygif.gif', mode='I') as writer:
+    with imageio.get_writer('mygif.gif', mode='I') as writer:
         for filename in listdir('images_net'):
             image = imageio.imread('images_net/'+filename)
-            writer.append_data(image) """
+            writer.append_data(image)
 
 if __name__ == "__main__":
    
