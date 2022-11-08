@@ -11,8 +11,8 @@ class evolution():
         scoring_function must be a function which accepts a net as input and returns a float
         """
         try:
-            trainloader, testloader, input_size, n_classes = dataset(batch_size)
-            input_channels = trainloader.dataset.data.shape[3]
+            trainloader, testloader, input_size, n_classes, input_channels = dataset(batch_size)
+
         except:
             print("Error: dataset not found")
             return
