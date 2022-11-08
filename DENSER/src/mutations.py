@@ -36,6 +36,7 @@ def GA_mutation(offspring, type=None):
     if type == None:
         type = np.random.choice(list(ga_mutation_type))
     print("GA mutation type ", type)
+    
     if type == ga_mutation_type.ADDITION:
         cut = choose_cut(offspring)
         if cut is not None:
