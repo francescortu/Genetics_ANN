@@ -88,8 +88,16 @@ class Net_encoding:
         "like the forward pass, compute the output shape of the features block"
         output_shape = input_shape
         for i in range(self.len_features()):
-            output_shape = self.features[i].compute_shape(output_shape)
+            output_shape = self.GA_encoding(i).compute_shape(output_shape)
         return output_shape
+
+    def print_shape_features(self, input_shape = 32):
+        output_shape = input_shape
+        print("features len:", self.len_features())
+        for i in range(self.len_features()):
+            output_shape = self.features[i].compute_shape(output_shape)
+            print(self.GA_encoding(i).print(), "output shape", output_shape)
+        
 
     def get(self):
         return self.GA_encoding
@@ -107,8 +115,8 @@ class Net_encoding:
 
     def fix_first_classification(self):
         # fix in channels of the first classification block
-        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
-        self.classification[0].fix_channels(c_in = last_in)
+        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.GA_encoding(self.len_features()-1).param['output_channels']
+        self.GA_encoding(self.len_features()).fix_channels(c_in = last_in)
 
     def fix_channels(self, cut1, cut2):
         "Given a new list of modules between cut1 and cut2, fix the channels of the modules"

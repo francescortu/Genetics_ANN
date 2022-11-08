@@ -4,11 +4,11 @@ from scripts.dataloader import MNIST, cifar10
 
 
 # set std param for MNIST dataset on which we will test the network
-DATASET = MNIST
+DATASET = cifar10
 BATCH_SIZE = 4
 NUM_CLASSES = 10
-INPUT_SIZE = 28
-INPUT_CHANNELS = 1 #3 for CIFAR10
+INPUT_SIZE = 32
+INPUT_CHANNELS = 3 #3 for CIFAR10
 
 MAX_LEN_FEATURES = 3
 MAX_LEN_CLASSIFICATION = 2
@@ -37,34 +37,36 @@ def test_crossover(trainloader):
 
 
 def test_mutation_GA_level(trainloader):
-    netcode = generate_random_net()
+    netcode = Net_encoding(1,2,INPUT_CHANNELS,NUM_CLASSES,INPUT_SIZE)
 
-    print(bcolors.HEADER +  "Random generated net:\n" + bcolors.ENDC)
-    netcode.print_GAlevel()
+    # print(bcolors.HEADER +  "Random generated net:\n" + bcolors.ENDC)
+    # netcode.print_GAlevel()
 
-    # test random mutation at GA level
-    print(bcolors.HEADER + "\n\nTesting random mutation at GA level...\n" + bcolors.ENDC)
-    GA_mutation(netcode)
-    netcode.print_GAlevel()
-    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
+    # # test random mutation at GA level
+    # print(bcolors.HEADER + "\n\nTesting random mutation at GA level...\n" + bcolors.ENDC)
+    # GA_mutation(netcode)
+    # netcode.print_GAlevel()
+    # assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
     
-    # test addition mutation at GA level
-    print(bcolors.HEADER + "\nTesting addition mutation at GA level...\n" + bcolors.ENDC)
-    GA_mutation(netcode, type = ga_mutation_type.ADDITION)
-    netcode.print_GAlevel()
-    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
+    # # test addition mutation at GA level
+    # print(bcolors.HEADER + "\nTesting addition mutation at GA level...\n" + bcolors.ENDC)
+    # GA_mutation(netcode, type = ga_mutation_type.ADDITION)
+    # netcode.print_GAlevel()
+    # assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test replace mutation at GA level
     print(bcolors.HEADER + "\nTesting replace mutation at GA level...\n" + bcolors.ENDC)
+    netcode.print_dsge_level()
     GA_mutation(netcode, type = ga_mutation_type.REPLACE)
     netcode.print_GAlevel()
+    netcode.print_dsge_level()
     assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
-    # test delete mutation at GA level
-    print(bcolors.HEADER + "\nTesting delete mutation at GA level...\n" + bcolors.ENDC)
-    GA_mutation(netcode, type = ga_mutation_type.REMOVAL)
-    netcode.print_GAlevel()
-    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
+    # # test delete mutation at GA level
+    # print(bcolors.HEADER + "\nTesting delete mutation at GA level...\n" + bcolors.ENDC)
+    # GA_mutation(netcode, type = ga_mutation_type.REMOVAL)
+    # netcode.print_GAlevel()
+    # assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
 
 
@@ -73,24 +75,24 @@ def test_mutation_dsge_level(trainloader):
     netcode = generate_random_net()
 
     print(bcolors.HEADER + "Random generated net:\n" + bcolors.ENDC)
-    netcode.print_dsge_level()
+    # netcode.print_dsge_level()
 
     # perform mutation at dsge level
     print(bcolors.HEADER + "\n\nTesting random mutation at dsge level...\n" + bcolors.ENDC)
     new = dsge_mutation(netcode)
-    netcode.print_dsge_level()
+    # netcode.print_dsge_level()
     assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test grammatical mutation at dsge level
     print(bcolors.HEADER + "\nTesting grammatical mutation at dsge level...\n" + bcolors.ENDC)
     new = dsge_mutation(netcode, type = dsge_mutation_type.GRAMMATICAL)
-    netcode.print_dsge_level()
+    # netcode.print_dsge_level()
     assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test integer mutation at dsge level
     print(bcolors.HEADER + "\nTesting integer mutation at dsge level...\n" + bcolors.ENDC)
     new = dsge_mutation(netcode, type =dsge_mutation_type.INTEGER)
-    netcode.print_dsge_level()
+    # netcode.print_dsge_level()
     assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
 
 
@@ -126,17 +128,22 @@ def test_evolution(trainloader):
             child1, child2 = GA_crossover(nets[parent_1_idx], nets[parent_2_idx])
             offspring = child1 if child1._len() < child2._len() else child2
             try:
-                offspring = GA_mutation(offspring)
+                offspring.print_dsge_level()
+                offspring = copy.deepcopy(GA_mutation(offspring))
                 assert(test_model(Net(offspring),trainloader)) == True, "Should be True if new netowrk is valid"
                 
-                offspring = dsge_mutation(offspring)
+                offspring = copy.deepcopy(dsge_mutation(offspring))
                 assert(test_model(Net(offspring),trainloader)) == True, "Should be True if new netowrk is valid"
 
             except:
-                print("Error in mutation")
-                offspring.print_dsge_level() # if mutation fails, print the netcode to see what went wrong
+                print(bcolors.ALT + "Error in mutation: " + str(j) +  bcolors.ENDC)
+                # offspring.print_dsge_level() # if mutation fails, print the netcode to see what went wrong
+                print(bcolors.ALT)
+                offspring.print_shape_features()
+                print(bcolors.ENDC)
 
             print(bcolors.HEADER + "Individual: " + str(j) +  bcolors.ENDC)
+            
             new_population.append(offspring)
         
         nets = new_population
@@ -148,3 +155,18 @@ def test_evolution(trainloader):
 class bcolors:
     HEADER = '\033[95m'
     ENDC = '\033[0m'
+    ALT = '\033[94m'
+def test_generation_networks(trainloader):
+
+
+    print(bcolors.HEADER + "\nTesting 100 random generation of networks" + bcolors.ENDC)
+    for i in range(100):
+        netcode = generate_random_net()
+        try:
+            netcode.print_dsge_level()
+            assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
+        except:
+            print("Invalid net")
+            netcode.print_shape_features()
+            netcode.print_dsge_level()
+            netcode.print_GAlevel()
