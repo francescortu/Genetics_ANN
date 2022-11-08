@@ -50,9 +50,9 @@ class evolution():
             offspring = child1 if child1._len() < child2._len() else child2
     
             if np.random.randint(0, 100) < MUTATION_RATE:
-                offspring = GA_mutation(offspring)
+                GA_mutation(offspring)
             if np.random.randint(0, 100) < MUTATION_RATE:
-                offspring = dsge_mutation(offspring)
+                dsge_mutation(offspring)
             new_population.append(offspring)
         
         self.population = new_population
