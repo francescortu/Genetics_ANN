@@ -8,6 +8,7 @@ DATASET = MNIST
 BATCH_SIZE = 4
 NUM_CLASSES = 10
 INPUT_SIZE = 28
+INPUT_CHANNELS = 1
 
 MAX_LEN_FEATURES = 3
 MAX_LEN_CLASSIFICATION = 2
@@ -16,7 +17,7 @@ MAX_LEN_CLASSIFICATION = 2
 def generate_random_net():
     num_feat = np.random.randint(1, MAX_LEN_FEATURES)
     num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
-    return Net_encoding(num_feat, num_class, LAST_LAYER_SIZE, NUM_CLASSES, INPUT_SIZE)
+    return Net_encoding(num_feat, num_class, INPUT_CHANNELS, NUM_CLASSES, INPUT_SIZE)
 
 
 def test_crossover(trainloader):
