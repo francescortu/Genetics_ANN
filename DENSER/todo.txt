@@ -20,3 +20,5 @@ Things yet to be done:
 * add crossover rate (~70%)
 
 * increase train set, decrease test set
+
+* aggiungere title immagini
