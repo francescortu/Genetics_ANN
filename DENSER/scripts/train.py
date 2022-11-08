@@ -5,7 +5,7 @@ import torch
 import torch.optim as optim
 
 
-def train(model, trainloader, batch_size = 4, epochs = 1, inspected = 1000):
+def train(model, trainloader, batch_size = 4, epochs = 1, inspected = 10000):
     '''
     model: the model to train
     trainloader: the dataloader for the training data
