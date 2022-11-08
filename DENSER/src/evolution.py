@@ -1,7 +1,7 @@
 from src.nn_encoding import *
 from scripts.train import train, eval, test_model
 
-MUTATION_RATE = 33
+MUTATION_RATE = 100
 CROSSOVER_RATE = 70
 
 class evolution():
