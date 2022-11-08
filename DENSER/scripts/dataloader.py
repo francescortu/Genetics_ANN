@@ -26,8 +26,10 @@ def cifar10(batch_size=4):
     # number of classes
     n_classes = len(trainloader.dataset.classes)
 
+    #input_channels = 3
+    input_channels = 3
 
-    return trainloader, testloader, input_size, n_classes
+    return trainloader, testloader, input_size, n_classes, input_channels
 
 
 def MNIST(batch_size=4):
@@ -51,5 +53,8 @@ def MNIST(batch_size=4):
     # number of classes
     n_classes = len(trainloader.dataset.classes)
 
+    #input_channels = 1
+    input_channels = 1
 
-    return trainloader, testloader, input_size, n_classes
+
+    return trainloader, testloader, input_size, n_classes, input_channels

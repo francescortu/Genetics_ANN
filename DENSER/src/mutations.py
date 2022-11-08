@@ -248,7 +248,7 @@ def integer_mutation(offspring):
     else:
         offspring.last_layer[0] = new_module
 
-    offspring.fix_first_classification(offspring)
+    offspring.fix_first_classification()
 
     return offspring
 

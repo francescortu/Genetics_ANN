@@ -59,7 +59,7 @@ if __name__ == "__main__":
     # load dataset for the following test function
     batch_size = 4
 
-    dataset = cifar10
+    dataset = MNIST
     print("\n\n Evolution of a population of networks: \n\n")
     test_evolution(dataset, batch_size)
 
