@@ -23,6 +23,7 @@ class Net_encoding:
         self.classification = []
         self.last_layer = []
         self.input_shape = input_shape
+        self.input_channels = c_in
         channels = self.init_random_channel(c_in, c_out, len_features + len_classification + 1 )
         
         if len_features > MAX_LEN_FEATURES:
@@ -129,7 +130,7 @@ class Net_encoding:
             c_out = self.GA_encoding(cut2-1).param['output_channels']
             c_in = self.GA_encoding(cut2).param['input_channels']
             new = min(c_in, c_out)
-            self.GA_encoding(cut1).fix_channels(c_in = 1) # since the input is 1 channel
+            self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset
             self.GA_encoding(cut2-1).fix_channels(c_out = new)
             self.GA_encoding(cut2).fix_channels(c_in = new)
 
@@ -146,7 +147,7 @@ class Net_encoding:
             self.GA_encoding(cut).fix_channels(c_in = new)
         
         else:   # if cut1 == 0 we are at the beginning of the network
-            self.GA_encoding(cut).fix_channels(c_in = 1) # we just need to change the input channels of first module
+            self.GA_encoding(cut).fix_channels(c_in = self.input_channels) # we just need to change the input channels of first module
         
         self.fix_first_classification()
 
