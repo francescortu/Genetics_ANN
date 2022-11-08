@@ -65,7 +65,7 @@ def GA_add(offspring, cut, module):
         offspring.features = copy.deepcopy(offspring.features[:cut + 1])
 
         # add the module
-        offspring.features[cut] = module
+        offspring.features[cut] = copy.deepcopy(module)
         offspring.features.extend(tmp) # add the rest of the modules
 
         #fix channels before and after the cut
@@ -73,17 +73,17 @@ def GA_add(offspring, cut, module):
         return offspring
 
     elif module.M_type == module_types.CLASSIFICATION:
-        tmp = copy.deepcopy(offspring.classification[cut - offspring.len_features():])
+        tmp = copy.deepcopy( offspring.classification[cut - offspring.len_features():]  )
         offspring.classification = copy.deepcopy(offspring.classification[:cut - offspring.len_features() + 1])
         
         # add the module
-        offspring.classification[cut- offspring.len_features()] = module
+        offspring.classification[cut- offspring.len_features()] = copy.deepcopy(module)
         offspring.classification.extend(tmp) # add the rest of the modules
         #fix channels before and after the cut        
         offspring.fix_channels(cut, cut+1)
         return offspring
 
-    return offspring
+    
 
 def GA_replace(offspring):
     "replace a module at random position"
@@ -101,7 +101,7 @@ def GA_replace(offspring):
             cut2 = np.random.randint(offspring.len_features(), offspring._len()-1)
         
         # The copy must be done by reference
-        module = offspring.GA_encoding(cut1) # determine the module to copy
+        module = copy.deepcopy(offspring.GA_encoding(cut1)) # determine the module to copy
         GA_add(offspring, cut2, module)
 
 

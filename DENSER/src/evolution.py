@@ -1,7 +1,7 @@
 from src.nn_encoding import *
 from scripts.train import train, eval, test_model
 
-MUTATION_RATE = 33
+MUTATION_RATE = 100
 CROSSOVER_RATE = 70
 
 class evolution():
@@ -11,7 +11,8 @@ class evolution():
         scoring_function must be a function which accepts a net as input and returns a float
         """
         try:
-            trainloader, testloader, input_size, n_classes = dataset(batch_size)
+            trainloader, testloader, input_size, n_classes, input_channels = dataset(batch_size)
+
         except:
             print("Error: dataset not found")
             return
@@ -27,7 +28,7 @@ class evolution():
         for _ in range(self.population_size):
             num_feat = np.random.randint(1, MAX_LEN_FEATURES)
             num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
-            self.population.append(Net_encoding(num_feat, num_class, LAST_LAYER_SIZE, n_classes, input_size))
+            self.population.append(Net_encoding(num_feat, num_class, input_channels, n_classes, input_size))
 
         self.get_best_organism()
         self.holdout = max(1, int(holdout * population_size))

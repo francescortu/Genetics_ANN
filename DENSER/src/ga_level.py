@@ -13,7 +13,7 @@ This file contains all the functions which are used to handle the GA level.
 '''
 MAX_LEN_FEATURES = 10
 MAX_LEN_CLASSIFICATION = 3 # 2 in DENSER
-LAST_LAYER_SIZE = 1
+
 
 class Net_encoding:
     "Describe the encoding of a network."
@@ -23,6 +23,7 @@ class Net_encoding:
         self.classification = []
         self.last_layer = []
         self.input_shape = input_shape
+        self.input_channels = c_in
         channels = self.init_random_channel(c_in, c_out, len_features + len_classification + 1 )
         
         if len_features > MAX_LEN_FEATURES:
@@ -87,8 +88,16 @@ class Net_encoding:
         "like the forward pass, compute the output shape of the features block"
         output_shape = input_shape
         for i in range(self.len_features()):
-            output_shape = self.features[i].compute_shape(output_shape)
+            output_shape = self.GA_encoding(i).compute_shape(output_shape)
         return output_shape
+
+    def print_shape_features(self, input_shape = 32):
+        output_shape = input_shape
+        print("features len:", self.len_features())
+        for i in range(self.len_features()):
+            output_shape = self.features[i].compute_shape(output_shape)
+            print(self.GA_encoding(i).print(), "output shape", output_shape)
+        
 
     def get(self):
         return self.GA_encoding
@@ -106,8 +115,8 @@ class Net_encoding:
 
     def fix_first_classification(self):
         # fix in channels of the first classification block
-        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.features[-1].param['output_channels']
-        self.classification[0].fix_channels(c_in = last_in)
+        last_in = (self.compute_shape_features(self.input_shape) ** 2) * self.GA_encoding(self.len_features()-1).param['output_channels']
+        self.GA_encoding(self.len_features()).fix_channels(c_in = last_in)
 
     def fix_channels(self, cut1, cut2):
         "Given a new list of modules between cut1 and cut2, fix the channels of the modules"
@@ -129,7 +138,7 @@ class Net_encoding:
             c_out = self.GA_encoding(cut2-1).param['output_channels']
             c_in = self.GA_encoding(cut2).param['input_channels']
             new = min(c_in, c_out)
-            self.GA_encoding(cut1).fix_channels(c_in = 1) # since the input is 1 channel
+            self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset
             self.GA_encoding(cut2-1).fix_channels(c_out = new)
             self.GA_encoding(cut2).fix_channels(c_in = new)
 
@@ -146,7 +155,7 @@ class Net_encoding:
             self.GA_encoding(cut).fix_channels(c_in = new)
         
         else:   # if cut1 == 0 we are at the beginning of the network
-            self.GA_encoding(cut).fix_channels(c_in = 1) # we just need to change the input channels of first module
+            self.GA_encoding(cut).fix_channels(c_in = self.input_channels) # we just need to change the input channels of first module
         
         self.fix_first_classification()
 

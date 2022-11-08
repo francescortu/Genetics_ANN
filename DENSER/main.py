@@ -1,6 +1,6 @@
 from src.nn_encoding import *
 from scripts.train import train, eval
-from scripts.dataloader import MNIST
+from scripts.dataloader import MNIST, cifar10
 from src.evolution import evolution
 from torchsummary import summary
 
