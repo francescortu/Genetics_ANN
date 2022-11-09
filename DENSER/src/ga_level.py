@@ -84,28 +84,27 @@ class Net_encoding:
         channels.append((tmp, C_out)) 
         return channels
     
-    def compute_shape_features(self, input_shape = 32):
+    def compute_shape_features(self, input_shape = 32, max_len = None):
         "like the forward pass, compute the output shape of the features block"
         output_shape = input_shape
-        for i in range(self.len_features()):
+        if max_len == None:
+            max_len = self.len_features()
+
+        for i in range(max_len):
             output_shape = self.GA_encoding(i).compute_shape(output_shape)
         return output_shape
-
-    def print_shape_features(self, input_shape = 32):
-        output_shape = input_shape
-        print("features len:", self.len_features())
-        for i in range(self.len_features()):
-            output_shape = self.features[i].compute_shape(output_shape)
-            print(self.GA_encoding(i).print(), "output shape", output_shape)
         
 
     def get(self):
         return self.GA_encoding
         
     def print_dsge_level(self):
-        print("Net encoding len:", self._len())
+        print(f"######## len: {self._len()} ##########")
         for i in range(self._len()):
-            print( self.GA_encoding(i).print())
+            self.GA_encoding(i).print(i)
+            if self.GA_encoding(i).M_type == module_types.FEATURES:
+                print("output shape", self.compute_shape_features(self.input_shape, i+1)  )
+        print("######################################")
 
     def print_GAlevel(self):
         "print only if the module is FEATURES or CLASSIFICATION"

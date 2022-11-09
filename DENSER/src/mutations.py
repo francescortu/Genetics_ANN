@@ -1,5 +1,6 @@
 from src.ga_level import *
 
+
 ###########################
 #   GA level  MUTATION    #
 ###########################
@@ -47,13 +48,13 @@ def GA_mutation(offspring, type=None):
             elif cut_type == module_types.CLASSIFICATION:
                 module = Module(module_types.CLASSIFICATION, c_in = c_in, c_out = c_out)
 
-            return GA_add(offspring, cut, module)
+            GA_add(offspring, cut, module)
         else:
             return offspring
     elif type == ga_mutation_type.REPLACE:
-        return GA_replace(offspring)
+        GA_replace(offspring)
     else:
-        return GA_remove(offspring)
+        GA_remove(offspring)
 
 
 def GA_add(offspring, cut, module):
@@ -70,7 +71,7 @@ def GA_add(offspring, cut, module):
 
         #fix channels before and after the cut
         offspring.fix_channels(cut, cut+1) 
-        return offspring
+     
 
     elif module.M_type == module_types.CLASSIFICATION:
         tmp = copy.deepcopy( offspring.classification[cut - offspring.len_features():]  )
@@ -81,7 +82,7 @@ def GA_add(offspring, cut, module):
         offspring.classification.extend(tmp) # add the rest of the modules
         #fix channels before and after the cut        
         offspring.fix_channels(cut, cut+1)
-        return offspring
+  
 
     
 
@@ -105,7 +106,7 @@ def GA_replace(offspring):
         GA_add(offspring, cut2, module)
 
 
-    return offspring
+ 
 
 
 def GA_remove(offspring):
@@ -136,16 +137,16 @@ def GA_remove(offspring):
             offspring.features.pop(cut)
             #fix channels
             offspring.fix_channels_deletion(cut)
-            return offspring
+
 
         elif cut_type == module_types.CLASSIFICATION:
             #remove the module
             offspring.classification.pop(cut - offspring.len_features())
             #fix channels
             offspring.fix_channels_deletion(cut)
-            return offspring
+    
 
-    return offspring
+    
 
 
        
@@ -177,7 +178,10 @@ def dsge_mutation(offspring, type = None):
     elif type == dsge_mutation_type.INTEGER:
         integer_mutation(offspring)
 
-    return offspring
+    #elif mutation == mutation_type.FLOAT:
+        #float_mutation(offspring)
+
+ 
 
 def grammatical_mutation(offspring):
     "Grammatical mutation of the DSGE encoding."
@@ -223,7 +227,7 @@ def grammatical_mutation(offspring):
 
     offspring.fix_first_classification()
 
-    return offspring
+    
 
 def integer_mutation(offspring):
     "Integer mutation of the DSGE encoding."
@@ -248,6 +252,6 @@ def integer_mutation(offspring):
 
     offspring.fix_first_classification()
 
-    return offspring
+    
 
 
