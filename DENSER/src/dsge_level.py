@@ -299,10 +299,13 @@ class Module:
         pool_type = str(self.layers[2].param["pool_type"])[5:]
         plt.text(x2+0.5, 5, f'POOL {pool_type}', fontsize=font_size, fontweight='bold',  color='black')
 
+        colors = ['#227046', '#bf5600']
 
+        color = colors[0] if pool_type == "MAX" else colors[1]
+            
         plt.annotate('', xy=(next, 0), xycoords='data',
             xytext=(x2+0.6, 0), textcoords='data',
-            arrowprops=dict(facecolor='#474747', width=1.2, headwidth=4, headlength=4))
+            arrowprops=dict(facecolor=color, edgecolor="none", width=1.2, headwidth=4, headlength=4))
         
         
         # get activation function type
@@ -315,13 +318,13 @@ class Module:
                 x1 = next + 3
                 x2 = x1 + 1
                 x = [x1,x2,x2,x1]
-                y1 = 5 - i*1
-                y2 = y1 - 1
+                y1 = 10 - i*2
+                y2 = y1 - 2
                 y = [y1,y1,y2,y2]
                 trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#f2d585', edgecolor='#c9b069', linewidth=0.8)
                 pyplot.gca().add_patch(trapezoid)
 
-            plt.text(x1-0.3, y1 - 7, 'Flatten\n layer', fontsize=font_size, fontweight='bold',  color='black')
+            plt.text(x1-0.5, y1 - 7, 'Flatten\n layer', fontsize=font_size, fontweight='bold',  color='black')
             next = x2 + 9
 
             self.add_label(0.5,x2, 'Feature extraction', font_size)
@@ -397,4 +400,4 @@ class Module:
         pyplot.gca().add_line(line)
         pyplot.gca().add_line(line1)
         pyplot.gca().add_line(line2)
-        plt.text(x1 + (x2 -x1)/3, -27, name,  fontweight='bold', fontsize=font_size,  color='black')
+        plt.text(x1 + (x2 -x1)/3 - 1, -27, name,  fontweight='bold', fontsize=font_size,  color='black')
