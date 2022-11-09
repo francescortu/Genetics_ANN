@@ -129,10 +129,10 @@ def test_evolution(trainloader):
             offspring = child1 if child1._len() < child2._len() else child2
             try:
                 offspring.print_dsge_level()
-                offspring = copy.deepcopy(GA_mutation(offspring))
+                GA_mutation(offspring)
                 assert(test_model(Net(offspring),trainloader)) == True, "Should be True if new netowrk is valid"
                 
-                offspring = copy.deepcopy(dsge_mutation(offspring))
+                offspring =dsge_mutation(offspring)
                 assert(test_model(Net(offspring),trainloader)) == True, "Should be True if new netowrk is valid"
 
             except:
