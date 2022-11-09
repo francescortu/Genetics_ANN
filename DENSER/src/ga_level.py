@@ -7,10 +7,8 @@ This file contains all the functions which are used to handle the GA level.
 * It deals with the modules at the GA level and the crossover operations to 
     obtain the new offspring from two parents.
 
-* It also contains the functions to mutate the offspring at the GA level, that is to 
-    say those operations which manipulate the network structure
-
 '''
+
 MAX_LEN_FEATURES = 10
 MAX_LEN_CLASSIFICATION = 3 # 2 in DENSER
 
@@ -179,8 +177,13 @@ class Net_encoding:
             else:
                 START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, length_c, node_in = node_input)
 
+        # add title
+        plt.title(f"Network representation, generation: {gen}")
+
+        # remove axis
         pyplot.axis('equal')
         plt.axis('off')
+        # save image
         plt.savefig(f'images_net/gen{gen:003}.png', dpi=300)
         plt.close()
         #pyplot.show()
@@ -205,77 +208,94 @@ def GA_crossover(parent1, parent2, type = None):
         return GA_bit_mask(parent1, parent2)
 
 def GA_bit_mask(parent1, parent2):
-        "Crossover with bit mask"
-        N = len(module_types)
-        mask = np.zeros(N, dtype=int)
-        K = np.random.randint(0, N -1)
-        mask[:K]  = 1
-        np.random.shuffle(mask)
-        mask1 = mask
-        mask2 = 1 - mask1
-        p = [parent1, parent2]
-      
-        child1 = Net_encoding(p[mask1[0]].len_features(), p[mask1[1]].len_classification(), p[mask1[0]].param['input_channels'], p[mask1[2]].param['output_channels'], p[mask1[0]].input_shape)
-        child2 = Net_encoding(p[mask2[0]].len_features(), p[mask2[1]].len_classification(), p[mask2[0]].param['input_channels'], p[mask2[2]].param['output_channels'], p[mask2[0]].input_shape)
-        # copy features
-        child1.features = copy.deepcopy(p[mask1[0]].features)
-        child2.features = copy.deepcopy(p[mask2[0]].features)
-        # copy classification
-        child1.classification = copy.deepcopy(p[mask1[1]].classification)
-        child2.classification = copy.deepcopy(p[mask2[1]].classification)
-         # copy last layer
-        child1.last_layer = copy.deepcopy(p[mask1[2]].last_layer)
-        child2.last_layer = copy.deepcopy(p[mask2[2]].last_layer)
-        
-        # fix channels
-        child1.fix_channels(child1.len_features(), child1.len_features())
-        child2.fix_channels(child2.len_features(), child2.len_features())
-        
-        child1.fix_channels(child1.len_features() + child1.len_classification(), child1.len_features() + child1.len_classification())
-        child2.fix_channels(child2.len_features() + child2.len_classification(), child2.len_features() + child2.len_classification())
-       
-        return child1, child2
+    "Crossover with bit mask"
+    N = len(module_types)
+    mask = np.zeros(N, dtype=int)
+    K = np.random.randint(0, N -1)
+    mask[:K]  = 1
+    np.random.shuffle(mask)
+    mask1 = mask
+    mask2 = 1 - mask1
+    p = [parent1, parent2]
+    
+    child1 = Net_encoding(p[mask1[0]].len_features(), p[mask1[1]].len_classification(), p[mask1[0]].param['input_channels'], p[mask1[2]].param['output_channels'], p[mask1[0]].input_shape)
+    child2 = Net_encoding(p[mask2[0]].len_features(), p[mask2[1]].len_classification(), p[mask2[0]].param['input_channels'], p[mask2[2]].param['output_channels'], p[mask2[0]].input_shape)
+    # copy features
+    child1.features = copy.deepcopy(p[mask1[0]].features)
+    child2.features = copy.deepcopy(p[mask2[0]].features)
+    # copy classification
+    child1.classification = copy.deepcopy(p[mask1[1]].classification)
+    child2.classification = copy.deepcopy(p[mask2[1]].classification)
+        # copy last layer
+    child1.last_layer = copy.deepcopy(p[mask1[2]].last_layer)
+    child2.last_layer = copy.deepcopy(p[mask2[2]].last_layer)
+    
+    # fix channels
+    child1.fix_channels(child1.len_features(), child1.len_features())
+    child2.fix_channels(child2.len_features(), child2.len_features())
+    
+    child1.fix_channels(child1.len_features() + child1.len_classification(), child1.len_features() + child1.len_classification())
+    child2.fix_channels(child2.len_features() + child2.len_classification(), child2.len_features() + child2.len_classification())
+    
+    return child1, child2
         
 def GA_one_point(parent1, parent2):
-        "cut the parent1 and parent2 at random position and swap the two parts"
-        #find cutting point
-        cut_parent1 = np.random.randint(1, parent1._len()-1)
+    "cut the parent1 and parent2 at random position and swap the two parts"
+
+    """ #find cutting point
+    cut_parent1 = np.random.randint(1, parent1._len()-1)
+    
+    #identify the type of the cut
+    cut1_type = parent1.GA_encoding(cut_parent1).M_type 
+
+    #find a cut on the same module also on parent2
+    if cut1_type == module_types.FEATURES:
+        cut_parent2 = 1 if parent2.len_features() == 1 else np.random.randint(1, parent2.len_features())
+    elif cut1_type == module_types.CLASSIFICATION:
+        cut_parent2 = np.random.randint(parent2.len_features(), parent2.len_features() + parent2.len_classification())"""
+
+    # randomly choose if the cut is in the features or in the classification
+    cut_parent1 = cut_parent2 = None
+    #print(list(module_types)(-1))
+    type = np.random.choice(list(module_types)[:-1])
+    
+    if type == module_types.FEATURES and parent1.len_features() > 1 and parent2.len_features() > 1:
+        cut_parent1 = np.random.randint(1, parent1.len_features())
+        cut_parent2 = np.random.randint(1, parent2.len_features())
+    
+    elif type == module_types.CLASSIFICATION and parent1.len_classification() > 1 and parent2.len_classification() > 1:
+        cut_parent1 = np.random.randint(parent1.len_features()+1, parent1._len()-1)
+        cut_parent2 = np.random.randint(parent2.len_features()+1, parent2._len()-1)
+
+    #print("cuts are: ", cut_parent1, ' ', cut_parent2)
+    
+    # cut type
+    if cut_parent1: cut1_type = parent1.GA_encoding(cut_parent1).M_type 
+    else: cut1_type = None
+
+    if cut1_type == module_types.FEATURES:
+        aux1 = copy.deepcopy(parent1.features[cut_parent1:])
+        aux2 = copy.deepcopy(parent2.features[cut_parent2:])
+
+        parent1.features = copy.deepcopy(parent1.features[:cut_parent1])
+        parent2.features = copy.deepcopy(parent2.features[:cut_parent2])
         
-        #identify the type of the cut
-        cut1_type = parent1.GA_encoding(cut_parent1).M_type
+        parent1.features.extend(aux2)
+        parent2.features.extend(aux1)
+        parent1.fix_channels(cut_parent1, parent1.len_features())
+        parent2.fix_channels(cut_parent2, parent2.len_features())
 
-        #find a cut on the same module also on parent2
-        if cut1_type == module_types.FEATURES:
-            cut_parent2 = 1 if parent2.len_features() == 1 else np.random.randint(1, parent2.len_features())
-        elif cut1_type == module_types.CLASSIFICATION:
-            cut_parent2 = np.random.randint(parent2.len_features(), parent2.len_features() + parent2.len_classification())
+    elif cut1_type == module_types.CLASSIFICATION:
+        aux1 = copy.deepcopy(parent1.classification[cut_parent1 - parent1.len_features():])
+        aux2 = copy.deepcopy(parent2.classification[cut_parent2 - parent2.len_features():])
+
+        parent1.classification = copy.deepcopy(parent1.classification[:cut_parent1 - parent1.len_features()])
+        parent2.classification = copy.deepcopy(parent2.classification[:cut_parent2 - parent2.len_features()])
         
-        if cut1_type == module_types.FEATURES:
-            aux1 = copy.deepcopy(parent1.features[cut_parent1:])
-            aux2 = copy.deepcopy(parent2.features[cut_parent2:])
-   
-            parent1.features = copy.deepcopy(parent1.features[:cut_parent1])
-            parent2.features = copy.deepcopy(parent2.features[:cut_parent2])
-            
-            parent1.features.extend(aux2)
-            parent2.features.extend(aux1)
-            parent1.fix_channels(cut_parent1, parent1.len_features())
-            parent2.fix_channels(cut_parent2, parent2.len_features())
+        parent1.classification.extend(aux2)
+        parent2.classification.extend(aux1)
+        parent1.fix_channels(cut_parent1, parent1.len_features() + parent1.len_classification())
+        parent2.fix_channels(cut_parent2, parent2.len_features() + parent2.len_classification())
 
-            return parent1, parent2
-
-        elif cut1_type == module_types.CLASSIFICATION:
-            aux1 = copy.deepcopy(parent1.classification[cut_parent1 - parent1.len_features():])
-            aux2 = copy.deepcopy(parent2.classification[cut_parent2 - parent2.len_features():])
-   
-            parent1.classification = copy.deepcopy(parent1.classification[:cut_parent1 - parent1.len_features()])
-            parent2.classification = copy.deepcopy(parent2.classification[:cut_parent2 - parent2.len_features()])
-            
-            parent1.classification.extend(aux2)
-            parent2.classification.extend(aux1)
-            parent1.fix_channels(cut_parent1, parent1.len_features() + parent1.len_classification())
-            parent2.fix_channels(cut_parent2, parent2.len_features() + parent2.len_classification())
-            return parent1, parent2
-
-        return parent1, parent2
+    return parent1, parent2
 
