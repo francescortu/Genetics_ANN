@@ -25,7 +25,7 @@ that is to say the layers inside each single module and their compatibility.
 
 '''
 
-PATH = '/home/alexserra98/uni/prog_deep/Genetics_ANN/DENSER/src/cnn.grammar.txt'
+PATH = 'src/cnn.grammar.txt'
 MIN_KERNEL_SIZE = 1
 MAX_KERNEL_SIZE = 3
 MIN_STRIDE = 1
@@ -34,7 +34,7 @@ DEBUG = 0
 MAX_LEN_FEATURES = 10
 MAX_LEN_CLASSIFICATION = 2 # 2 in DENSER
 
-MAX_LEN_BLOCK_CLASSIFICATION = 5 # 2 in DENSER
+MAX_LEN_BLOCK_FEATURES = 5 # 2 in DENSER
 MIN_CHANNEL_FEATURES = 32
 MAX_CHANNEL_FEATURES = 256
 MIN_CHANNEL_CLASSIFICATION = 128
@@ -133,6 +133,7 @@ class module_types(Enum):
     FEATURES = 0
     CLASSIFICATION = 1
     LAST_LAYER = 2
+    FIRST_LAYER = 3
 
 
 class Module:
@@ -144,6 +145,10 @@ class Module:
         self.init_max = {'features' : 6,'classification' : 1, 'learning' : 1}
         self.grammar = g.Grammar(PATH)
 
+        if self.M_type == module_types.FIRST_LAYER:
+            self.layers.append(Layer(layer_type.CONV, c_in, c_out))
+            self.layers.append(Layer(layer_type.ACTIVATION, c_out, c_out))
+
         if self.M_type == module_types.CLASSIFICATION:
             self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
             self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out))
@@ -153,6 +158,12 @@ class Module:
 
         elif self.M_type == module_types.FEATURES:
             self.initialise('features', self.init_max, c_in, c_out)
+    
+    def check_conv(self):
+        for l in self.layers:
+            if l.type == layer_type.CONV:
+                return True
+        return False
 
     def initialise(self, type, init_max,  c_in, c_out, reuse=0.2):
         """
@@ -176,13 +187,13 @@ class Module:
         layer_pheno = []
         #Initialise layers
         last_conv = 0
-        if DEBUG == 0:
-            print(f'c_in:{c_in}, c_out{c_out}')
+
         for idx in range(num_expansions):
             pheno = self.grammar.initialise(type)
             pheno_decoded = self.grammar.decode(type, pheno)
             pheno_dict = self.get_layers(pheno_decoded)
             l_type = self.l_type(pheno_dict[0][0])
+
             layer_pheno.append(l_type)
             if pheno_dict[0][0] == 'conv':
                 last_conv = idx
@@ -192,8 +203,7 @@ class Module:
                 tmp_cout = c_out
             elif layer_pheno[idx]!=layer_type.POOLING:
                 tmp_cout = np.random.randint(7,30) 
-            if DEBUG == 0:
-                print(f'layer: {layer_pheno[idx]}, c_in:{tmp_cin}, c_out:{tmp_cout}')
+
             self.layers.append(Layer(layer_pheno[idx], c_in = tmp_cin , c_out = tmp_cout))
             self.layers.append(Layer(layer_type.ACTIVATION, c_in = tmp_cout , c_out = tmp_cout))
             #setting channels for next iter
@@ -299,6 +309,7 @@ class Module:
                 self.layers.append(Layer(layer_type.CONV,c_in=tmp_cin, c_out=c_out))
             self.param['output_channels'] = c_out
             self.param['input_channels'] = c_in
+
         elif self.M_type == module_types.FEATURES and c_out is not None:
             last_conv = -1
             for i in range(self.len()):
@@ -323,11 +334,11 @@ class Module:
                 i +=1
             if i < self.len():
                 self.layers[i].fix_channels(c_in=tmp_cin)
-                self.param['input_channels'] = c_in
+                self.param['input_channels'] = c_in     
             # case in which all layers are pool or act
             if i == self.len():
-                self.param['input_channels'] = c_in
-                self.layers.append(Layer(layer_type.CONV,c_in=c_in, c_out=self.param['output_channe']))
+                self.param['input_channels'] = c_in     #
+                self.layers.append(Layer(layer_type.CONV,c_in=c_in, c_out=self.param['output_channels']))
                 
         
 
