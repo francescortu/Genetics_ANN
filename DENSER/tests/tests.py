@@ -4,7 +4,7 @@ from scripts.dataloader import MNIST, cifar10
 import sys
 
 # set std param for MNIST dataset on which we will test the network
-DATASET = cifar10
+DATASET = MNIST
 BATCH_SIZE = 4
 NUM_CLASSES = 10
 INPUT_SIZE = 32
@@ -74,21 +74,21 @@ def test_mutation_dsge_level(trainloader):
 
     # perform mutation at dsge level
     print(bcolors.HEADER + "\n\nTesting random mutation at dsge level...\n" + bcolors.ENDC)
-    new = dsge_mutation(netcode)
+    dsge_mutation(netcode)
     # netcode.print_dsge_level()
-    assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test grammatical mutation at dsge level
     print(bcolors.HEADER + "\nTesting grammatical mutation at dsge level...\n" + bcolors.ENDC)
-    new = dsge_mutation(netcode, type = dsge_mutation_type.GRAMMATICAL)
+    dsge_mutation(netcode, type = dsge_mutation_type.GRAMMATICAL)
     # netcode.print_dsge_level()
-    assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test integer mutation at dsge level
     print(bcolors.HEADER + "\nTesting integer mutation at dsge level...\n" + bcolors.ENDC)
-    new = dsge_mutation(netcode, type =dsge_mutation_type.INTEGER)
+    dsge_mutation(netcode, type =dsge_mutation_type.INTEGER)
     # netcode.print_dsge_level()
-    assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
 
 
@@ -164,9 +164,10 @@ def generate_random_net():
     num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
     return Net_encoding(num_feat, num_class, INPUT_CHANNELS, NUM_CLASSES, INPUT_SIZE)
 
-def test_generation_networks(trainloader):
+def test_generation_networks(trainloader, num_net = 100 ):
     print(bcolors.HEADER + "\nTesting 100 random generation of networks" + bcolors.ENDC)
-    for i in range(1):
+    number_of_errors = 0
+    for i in range(num_net):
         netcode = generate_random_net()
     
         try:
@@ -176,6 +177,9 @@ def test_generation_networks(trainloader):
 
         except:
             print(bcolors.ALT + "Error in generation: " + str(i) +  bcolors.ENDC)
+            number_of_errors += 1
+    
+    print(bcolors.ALT + "Number of errors: " + str(number_of_errors) +  bcolors.ENDC)
 
 def test_channels(netcode):    
     for i in range(1,netcode._len()):
