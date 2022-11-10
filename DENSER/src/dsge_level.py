@@ -25,7 +25,7 @@ that is to say the layers inside each single module and their compatibility.
 
 '''
 
-PATH = '/home/alexserra98/uni/prog_deep/Genetics_ANN/DENSER/src/cnn.grammar.txt'
+PATH = 'src/cnn.grammar.txt'
 MIN_KERNEL_SIZE = 1
 MAX_KERNEL_SIZE = 8
 MIN_STRIDE = 1
@@ -33,6 +33,8 @@ MAX_STRIDE = 2
 
 MAX_LEN_FEATURES = 10
 MAX_LEN_CLASSIFICATION = 2 # 2 in DENSER
+
+MAX_LEN_BLOCK_CLASSIFICATION = 5 # 2 in DENSER
 MIN_CHANNEL_FEATURES = 32
 MAX_CHANNEL_FEATURES = 256
 MIN_CHANNEL_CLASSIFICATION = 128
@@ -159,7 +161,6 @@ class Module:
         self.M_type = M_type #set the type
         self.layers = []
         self.param  = {"input_channels": c_in, 'output_channels': c_out}
-        self.init_max = {'features' : 5,'classification' : 1, 'learning' : 1}
         self.grammar = g.Grammar(PATH)
 
         if self.M_type == module_types.CLASSIFICATION:
@@ -171,9 +172,9 @@ class Module:
             self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out, param = activation.SOFTMAX))
 
         elif self.M_type == module_types.FEATURES:
-            self.initialise('features', self.init_max,c_in,c_out)
+            self.initialise_features_block(c_in,c_out)
 
-    def initialise(self, type, init_max,  c_in, c_out, reuse=0.2):
+    def initialise_features_block(self,  c_in, c_out, reuse=0.2):
         """
             Randomly creates a module
             Parameters
@@ -187,25 +188,36 @@ class Module:
             score_history : dict
                 training data: loss and accuracy
         """
-        #for later purpose init_max should be of lenght 3, each a entry for a type of module
-        num_expansions = init_max[type]
+
         tmp_cin = c_in
-        tmp_cout = c_out
+        tmp_cout = np.random.randint(7,30)
+        last_valid_conv = None
         #Initialise layers
-        for idx in range(num_expansions):
-            if idx>0 and random.random() <= reuse:
-                r_idx = random.randint(0, idx-1)
-                self.layers.append(self.layers[r_idx])
-            else:
-                pheno = self.grammar.initialise(type)
-                pheno_decoded = self.grammar.decode(type, pheno)
+        for idx in range(MAX_LEN_BLOCK_CLASSIFICATION):
+            # if idx>0 and random.random() <= reuse:
+            # #     r_idx = random.randint(0, idx-1)
+            # #     self.layers.append(self.layers[r_idx])
+            # else:
+                pheno = self.grammar.initialise("features")
+                pheno_decoded = self.grammar.decode("features", pheno)
                 pheno_dict = self.get_layers(pheno_decoded)
                 l_type = self.l_type(pheno_dict[0][0])
+                
+                if l_type != layer_type.CONV:
+                    tmp_cout = tmp_cin
+                elif l_type == layer_type.POOLING:
+                    tmp_cout = np.random.randint(7,30)
                 self.layers.append(Layer(l_type, c_in = tmp_cin , c_out = tmp_cout))
-                self.layers.append(Layer(layer_type.ACTIVATION, c_in = tmp_cin , c_out = tmp_cout))
+                if l_type == layer_type.CONV and self.layers[-1].param["padding"] == "valid":
+                    last_valid_conv = idx
+                self.layers.append(Layer(layer_type.ACTIVATION, c_in = tmp_cout , c_out = tmp_cout))
                 #setting channels for next iter
+            
                 tmp_cin = tmp_cout
-                tmp_cout = np.random.randint(7,30)
+        if last_valid_conv is not None:  
+            for j in range(last_valid_conv, len(self.layers)):
+                self.layers[j].fix_channels(c_out = c_out)
+                
     
     def init_random_channel(self, C_in, C_out, len):
         tmp = C_in
