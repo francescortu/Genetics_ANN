@@ -3,9 +3,11 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch
 import torch.optim as optim
+from torchsummary import summary
 
+DEBUG = 0
 
-def train(model, trainloader, batch_size = 4, epochs = 1, inspected = 10000):
+def train(model, trainloader, batch_size = 4, epochs = 1, all = False):
     '''
     model: the model to train
     trainloader: the dataloader for the training data
@@ -16,10 +18,14 @@ def train(model, trainloader, batch_size = 4, epochs = 1, inspected = 10000):
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu") # the device type is automatically chosen
 
     model.to(device)
-    inspected = inspected
+    if all:
+        inspected = len(trainloader.dataset)
+        epochs = 2
+    else:
+        inspected = len(trainloader.dataset) / 5  # the number of items to be used for training before printing the loss
+
     iterations = int(inspected / batch_size)
     
-
     # define the loss function and the optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
@@ -28,7 +34,7 @@ def train(model, trainloader, batch_size = 4, epochs = 1, inspected = 10000):
 
         dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
 
-        for i in tqdm(range(iterations), desc="training"):
+        for i in tqdm(range(iterations), desc=f"training epoch:{epoch}"):
             try:
                 inputs, labels = next(dataloader_iterator)
                 inputs, labels = inputs.to(device), labels.to(device)
@@ -58,13 +64,18 @@ def test_model(model, trainloader):
 
     model.to(device)
     dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
-      
+    if DEBUG == 0:
+            #summary(model, (3,32,32))
+            print(model)
+
     try:
         inputs, labels = next(dataloader_iterator)
         inputs, labels = inputs.to(device), labels.to(device)
         
         # run inputs through the network to see if everything works
         model(inputs)
+        
+
 
     except Exception as e:
         print("This network will be discarded as some measures are incorrect. In particular:\n", e)
