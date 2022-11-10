@@ -19,5 +19,3 @@ if __name__ == "__main__":
 
    print("TEST EVOLUTION...")
    test_evolution(trainloader)
-
-   print("\n\nEverything passed")

@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from enum import Enum
 from scripts import utils
+import src.grammar as g
 
 import copy
 
@@ -24,6 +25,7 @@ that is to say the layers inside each single module and their compatibility.
 
 '''
 
+PATH = '/home/alexserra98/uni/prog_deep/Genetics_ANN/DENSER/src/cnn.grammar.txt'
 MIN_KERNEL_SIZE = 1
 MAX_KERNEL_SIZE = 3
 MIN_STRIDE = 1
@@ -129,7 +131,8 @@ class Module:
         self.M_type = M_type #set the type
         self.layers = []
         self.param  = {"input_channels": c_in, 'output_channels': c_out}
-        
+        self.init_max = {'features' : 5,'classification' : 1, 'learning' : 1}
+        self.grammar = g.Grammar(PATH)
 
         if self.M_type == module_types.CLASSIFICATION:
             self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
@@ -139,9 +142,96 @@ class Module:
             self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
 
         elif self.M_type == module_types.FEATURES:
-            self.layers.append(Layer(layer_type.CONV, c_in = c_in, c_out = c_out))
-            self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out))
-            self.layers.append(Layer(layer_type.POOLING, c_in = c_out, c_out = c_out))
+            self.initialise('features', self.init_max,c_in,c_out)
+
+    def initialise(self, type, init_max,  c_in, c_out, reuse=0.2):
+        """
+            Randomly creates a module
+            Parameters
+            ----------
+            grammar : Grammar
+                grammar instace that stores the expansion rules
+            reuse : float
+                likelihood of reusing an existing layer
+            Returns
+            -------
+            score_history : dict
+                training data: loss and accuracy
+        """
+        #for later purpose init_max should be of lenght 3, each a entry for a type of module
+        num_expansions = init_max[type]
+        tmp_cin = c_in
+        tmp_cout = c_out
+        #Initialise layers
+        for idx in range(num_expansions):
+            if idx>0 and random.random() <= reuse:
+                r_idx = random.randint(0, idx-1)
+                self.layers.append(self.layers[r_idx])
+            else:
+                pheno = self.grammar.initialise(type)
+                pheno_decoded = self.grammar.decode(type, pheno)
+                pheno_dict = self.get_layers(pheno_decoded)
+                l_type = self.l_type(pheno_dict[0][0])
+                self.layers.append(Layer(l_type, c_in = tmp_cin , c_out = tmp_cout))
+                self.layers.append(Layer(layer_type.ACTIVATION, c_in = tmp_cin , c_out = tmp_cout))
+                #setting channels for next iter
+                tmp_cin = tmp_cout
+                tmp_cout = np.random.randint(7,30)
+    
+    def init_random_channel(self, C_in, C_out, len):
+        tmp = C_in
+        channels = []
+        for i in range(len-1):
+            out  = np.random.randint(7,30)
+            channels.append( (tmp, out ) )
+            tmp = out
+    
+    def l_type(self,l_name):
+        if l_name == 'conv':
+            return layer_type.CONV
+        elif l_name == 'pool_avg' or l_name == 'pool_max':
+            return layer_type.POOLING
+
+    def get_layers(self, phenotype):
+        """
+            Parses the phenotype corresponding to the layers.
+            Auxiliary function of the assemble_network function.
+            Parameters
+            ----------
+            phenotye : str
+                individual layers phenotype
+            Returns
+            -------
+            layers : list
+                list of tuples (layer_type : str, node properties : dict)
+        """
+
+        raw_phenotype = phenotype.split(' ')
+
+        idx = 0
+        first = True
+        node_type, node_val = raw_phenotype[idx].split(':')
+        layers = []
+
+        while idx < len(raw_phenotype):
+            if node_type == 'layer':
+                if not first:
+                    layers.append((layer_type, node_properties))
+                else:
+                    first = False
+                layer_type = node_val
+                node_properties = {}
+            else:
+                node_properties[node_type] = node_val.split(',')
+
+            idx += 1
+            if idx < len(raw_phenotype):
+                node_type, node_val = raw_phenotype[idx].split(':')
+
+        layers.append((layer_type, node_properties))
+
+        return layers
+
 
     def len(self):
         return len(self.layers)  
