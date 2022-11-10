@@ -7,11 +7,11 @@ import sys
 DATASET = MNIST
 BATCH_SIZE = 4
 NUM_CLASSES = 10
-INPUT_SIZE = 32
-INPUT_CHANNELS = 3 #3 for CIFAR10
+INPUT_SIZE = 28
+INPUT_CHANNELS = 1 #3 for CIFAR10
 
 MAX_LEN_FEATURES = 10
-MAX_LEN_CLASSIFICATION = 10
+MAX_LEN_CLASSIFICATION = 2
 
 
 
@@ -180,11 +180,13 @@ def test_generation_networks(trainloader, num_net = 100 ):
             assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
             assert(test_channels(netcode)) == True, "Should be True if new netowrk is valid"
 
-        except:
+        except Exception as e:
             print(bcolors.ALT + "Error in generation: " + str(i) +  bcolors.ENDC)
+            print(e)
             number_of_errors += 1
-    if(num_net == 1):
+    if num_net == 1 :
         netcode.print_dsge_level()
+    
     print(bcolors.ALT + "Number of errors: " + str(number_of_errors) +  bcolors.ENDC)
 
 def test_channels(netcode):    
