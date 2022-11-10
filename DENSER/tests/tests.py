@@ -1,7 +1,7 @@
 from src.evolution import *
 from scripts.train import test_model
 from scripts.dataloader import MNIST, cifar10
-
+import sys
 
 # set std param for MNIST dataset on which we will test the network
 DATASET = cifar10
@@ -10,8 +10,8 @@ NUM_CLASSES = 10
 INPUT_SIZE = 32
 INPUT_CHANNELS = 3 #3 for CIFAR10
 
-MAX_LEN_FEATURES = 3
-MAX_LEN_CLASSIFICATION = 2
+MAX_LEN_FEATURES = 10
+MAX_LEN_CLASSIFICATION = 10
 
 
 
@@ -115,8 +115,9 @@ def test_evolution(trainloader):
         print(bcolors.HEADER + "\nGeneration: " + str(i) +  bcolors.ENDC)
 
         for j in range(population_size):
-            parent_1_idx = np.random.randint(0, population_size)
-            parent_2_idx = np.random.randint(0, population_size)
+          
+            parent_1_idx, parent_2_idx = np.random.choice(a=np.arange(population_size), size=2, replace=False)
+            print(parent_1_idx, parent_2_idx)
             
             offspring = None
             parent1 = copy.deepcopy(nets[parent_1_idx])
@@ -145,6 +146,7 @@ def test_evolution(trainloader):
                 print(bcolors.RED)
                 offspring.print_dsge_level()
                 print(bcolors.ENDC)
+                sys.exit(1)
  
 
             print(bcolors.HEADER + "Individual: " + str(j) +  bcolors.ENDC)
