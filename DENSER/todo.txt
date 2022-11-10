@@ -1,13 +1,13 @@
 Things yet to be done:
 
-* about crossover:
+[X] about crossover:
     the module (where the cut is placed) should be selected in tournament
     "we first select a given module from the two parents (selected by tournament), and then we apply a one-point crossover 
     to the module, without changing any of the remaining modules."
 
-* add softmax (?) like it is in DENSER
+[X] add softmax (?) like it is in DENSER
 
-* at the moment the mutations at GA level involve only features and classification layers 
+[X] at the moment the mutations at GA level involve only features and classification layers 
 
 * there is a problem with layers sizes which shows only some times (the size of the input becomes too small)
     I've tried to reset the min and max values of stride, kernel and padding, but further checks are needed
@@ -17,8 +17,8 @@ Things yet to be done:
 
 * control maximum number of feature's and classification's block layers (classification was previously set to 10)
 
-* add crossover rate (~70%)
+[X] add crossover rate (~70%)
 
-* increase train set, decrease test set
+[X] increase train set, decrease test set
 
 * aggiungere title immagini
