@@ -9,6 +9,8 @@ import sys
 import imageio
 from os import listdir
 
+LAST_LAYER_SIZE = 1
+
 def test_evolution(dataset, batch_size):
     curr_env = evolution(population_size=2, holdout=0.6, mating=True, dataset=dataset, batch_size=batch_size)
     
@@ -44,15 +46,18 @@ def generate_random_net():
     return Net_encoding(num_feat, num_class, LAST_LAYER_SIZE, 10, 28)
 
 def create_random_gif():
-    #for i in range(8):
-    enc = generate_random_net()
-    enc.draw(0)
+    for i in range(8):
+        enc = generate_random_net()
+        enc.draw(i)
 
+    frames = []
     # Build GIF
-    """ with imageio.get_writer('mygif.gif', mode='I') as writer:
-        for filename in listdir('images_net'):
-            image = imageio.imread('images_net/'+filename)
-            writer.append_data(image) """
+
+    for filename in listdir('images_net'):
+        image = imageio.imread('images_net/'+filename)
+        frames.append(image)
+
+    imageio.mimsave('nn_evolution.gif', frames, format='GIF', duration=1)
 
 if __name__ == "__main__":
    
@@ -63,4 +68,3 @@ if __name__ == "__main__":
     print("\n\n Evolution of a population of networks: \n\n")
     test_evolution(dataset, batch_size)
 
-    
