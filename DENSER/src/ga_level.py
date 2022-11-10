@@ -1,5 +1,5 @@
 from src.dsge_level import *
-
+import sys
 '''
 
 This file contains all the functions which are used to handle the GA level.
@@ -200,6 +200,7 @@ class cross_type(Enum):
 
 def GA_crossover(parent1, parent2, type = None):
     "randomly choose the crossover type"
+    type = cross_type.ONE_POINT
     if type == None:
         type = np.random.choice(list(cross_type))
     if type == cross_type.ONE_POINT:
@@ -239,6 +240,125 @@ def GA_bit_mask(parent1, parent2):
     
     return child1, child2
         
+
+
+# def GA_one_point(parent1, parent2):
+#     "cut the parent1 and parent2 at random position and swap the two parts"
+#     print("ONE POINT CROSSOVER")
+#     if( parent1 is parent2):
+#         print("ERROR: parents are the same")
+#     # random choose the crossover point
+#     cross_type = np.random.randint(0,2)
+#     if cross_type == 0:
+#         cross_type = 'features'
+#         if parent1.len_features() == 1:
+#             # return parent1, parent2
+#             pass
+#         else:
+#             #choose cut point
+#             cut1 = np.random.randint(1, parent1.len_features())
+#             cut2 = 1 if parent2.len_features() == 1 else np.random.randint(1, parent2.len_features())
+
+            
+#             aux1 = copy.deepcopy(parent1.features[cut1:])
+#             aux2 = copy.deepcopy(parent2.features[cut2:])
+
+#             parent1.features = copy.deepcopy(parent1.features[:cut1])
+#             parent2.features = copy.deepcopy(parent2.features[:cut2])
+            
+#             parent1.features.extend(aux2)
+#             parent2.features.extend(aux1)
+#             parent1.fix_channels(cut1, parent1.len_features() - 1 )
+#             parent2.fix_channels(cut2, parent2.len_features() - 1 )
+#             error = test_channels(parent1, "errore featur dopo fix parent1")
+#             error = test_channels(parent2, " errore features dopo fix parent2")
+#             if(error):
+#                 print(cut1, cut2)
+#                 sys.exit("aborted for channel error")
+#     else:
+#         cross_type = 'classification'
+#         if parent1.len_classification() == 1:
+#             # return parent1, parent2
+#             pass
+#         else:
+#             #choose cut point
+#             cut1 = np.random.randint(1, parent1.len_classification())
+#             cut2 = 1 if parent2.len_classification() == 1 else np.random.randint(1, parent2.len_classification())
+
+#             aux1 = copy.deepcopy(parent1.classification[cut1:])
+#             aux2 = copy.deepcopy(parent2.classification[cut2:])
+
+#             parent1.classification = copy.deepcopy(parent1.classification[:cut1])
+#             parent2.classification = copy.deepcopy(parent2.classification[:cut2 ])
+            
+#             parent1.classification.extend(aux2)
+#             parent2.classification.extend(aux1)
+
+#             parent1.fix_channels(cut1 + parent1.len_features(), parent1.len_features() + parent1.len_classification() - 1 )
+#             parent2.fix_channels(cut2 + parent2.len_features(), parent2.len_features() + parent2.len_classification() - 1 )
+#             error = test_channels(parent1, "errore class dopo fix parent1")
+#             error = test_channels(parent2, " errore class dopo fix parent2")
+#             if(error):
+#                 print( cut1, cut2)
+#                 sys.exit("aborted for channel error")
+
+#     return parent1, parent2
+
+    
+
+# def GA_one_point(parent1, parent2):
+        
+#         #find cutting point
+#         cut_parent1 = np.random.randint(1, parent1._len()-1)
+
+#         #identify the type of the cut
+#         cut1_type = parent1.GA_encoding(cut_parent1).M_type
+        
+
+#         #find a cut on the same module also on parent2
+#         if cut1_type == module_types.FEATURES:
+#             if(parent2.len_features() != 1):
+#                 cut_parent2 = np.random.randint(1, parent2.len_features())
+#             else:
+#                 cut1_type = None
+            
+#         elif cut1_type == module_types.CLASSIFICATION: 
+#             if( parent2.len_features() + 1 < parent2.len_features() + parent2.len_classification()) and (parent1.len_classification() != 1):
+#                 cut_parent2 =np.random.randint(parent2.len_features() + 1, parent2.len_features() + parent2.len_classification())
+#             else:
+#                 cut1_type = None
+            
+
+
+#         if cut1_type == module_types.FEATURES:
+#             # aux1 = copy.deepcopy(parent1.features[cut_parent1:])
+#             # aux2 = copy.deepcopy(parent2.features[cut_parent2:])
+   
+#             # parent1.features = copy.deepcopy(parent1.features[:cut_parent1])
+#             # parent2.features = copy.deepcopy(parent2.features[:cut_parent2])
+            
+#             # parent1.features.extend(aux2)
+#             # parent2.features.extend(aux1)
+#             # parent1.fix_channels(cut_parent1, parent1.len_features())
+#             # parent2.fix_channels(cut_parent2, parent2.len_features())
+
+#             return parent1, parent2
+
+#         elif cut1_type == module_types.CLASSIFICATION: 
+#             # aux1 = copy.deepcopy(parent1.classification[cut_parent1 - parent1.len_features():])
+#             # aux2 = copy.deepcopy(parent2.classification[cut_parent2 - parent2.len_features():])
+   
+#             # parent1.classification = copy.deepcopy(parent1.classification[:cut_parent1 - parent1.len_features()])
+#             # parent2.classification = copy.deepcopy(parent2.classification[:cut_parent2 - parent2.len_features()])
+            
+#             # parent1.classification.extend(aux2)
+#             # parent2.classification.extend(aux1)
+#             # parent1.fix_channels(cut_parent1, parent1.len_features() + parent1.len_classification())
+#             # parent2.fix_channels(cut_parent2, parent2.len_features() + parent2.len_classification())
+#             return parent1, parent2
+
+#         return parent1, parent2
+
 def GA_one_point(parent1, parent2):
     "cut the parent1 and parent2 at random position and swap the two parts"
 
