@@ -11,8 +11,8 @@ This file contains all the functions which are used to handle the GA level.
     say those operations which manipulate the network structure
 
 '''
-MAX_LEN_FEATURES = 10
-MAX_LEN_CLASSIFICATION = 3 # 2 in DENSER
+
+
 
 
 class Net_encoding:

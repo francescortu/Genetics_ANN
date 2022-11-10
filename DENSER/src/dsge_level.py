@@ -27,7 +27,7 @@ that is to say the layers inside each single module and their compatibility.
 
 PATH = 'src/cnn.grammar.txt'
 MIN_KERNEL_SIZE = 1
-MAX_KERNEL_SIZE = 3
+MAX_KERNEL_SIZE = 8
 MIN_STRIDE = 1
 MAX_STRIDE = 3
 DEBUG = 0
@@ -61,17 +61,23 @@ class activation(Enum):
     "Activation types for DSGE."
     RELU = 0
     SIGMOID = 1
-    #TANH = 2
-    #SOFTMAX = 3
+    SOFTMAX = 2
+    #TANH = 3
+
+class padding_type(Enum):
+    "Convolution types for DSGE."
+    PADDING_SAME = "same"
+    PADDING_VALID = "valid"
 
 class Layer:
     "Layer class."
     def __init__(self, type=None, c_in = None, c_out = None, param=None):
+
+        self.channels = {'in': c_in, 'out': c_out}
         if type is None: # Random init, no type specified (could be pooling, conv, activation, linear)
             self.random_init()
         else:
             self.init_form_encoding(type, param)
-        self.channels = {'in': c_in, 'out': c_out}
         
         
     def random_init(self):
@@ -79,17 +85,30 @@ class Layer:
         self.random_init_param()                  #randomly choose the parameters of the type
 
     def random_init_param(self):
-        kernel_size = np.random.randint(MIN_KERNEL_SIZE, MAX_KERNEL_SIZE)
+        kernel_size = random.randrange(MIN_KERNEL_SIZE, MAX_KERNEL_SIZE, 2)
+        # kernel_size = np.random.randint(MIN_KERNEL_SIZE, MAX_KERNEL_SIZE)
         stride_size = np.random.randint(MIN_STRIDE, MAX_STRIDE)
+        padding = np.random.choice(list(padding_type))
+        if padding.value == "same":
+            stride_size = 1
 
         if self.type == layer_type.POOLING:           #randomly choose a pooling type
-            padding_size = np.random.randint(0,int(kernel_size/2)+1) # pad should be smaller than or equal to half of kernel size
-            self.param = {"pool_type" : pool(np.random.randint(len(pool))), "kernel_size": kernel_size, "stride": stride_size, "padding": padding_size}
+            padding_value = 0
+
+            pool_type = pool(np.random.randint(len(pool)))
+
+            if pool_type == pool.MAX:
+                if padding.value == "same":
+                    padding_value = utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
+            elif pool_type == pool.AVG:
+                if padding.value == "same":
+                    padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
+            
+            self.param = {"pool_type" : pool_type, "kernel_size": kernel_size, "stride": stride_size, "padding": padding_value}
         elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
-            padding_size = np.random.randint(int(kernel_size/2)+1, kernel_size+1)
-            self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding_size}
+            self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value}
         elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
-            self.param = activation(np.random.randint(len(activation)))
+            self.param = activation(np.random.randint(len(activation)-1))
         elif self.type == layer_type.LINEAR:     #linear layer has no parameters
             self.param = None
     
@@ -97,6 +116,8 @@ class Layer:
         self.type = type   #set the type
         if param is None:   #if no parameters are specified, randomly choose them
             self.random_init_param()
+        else:
+            self.param = param
         
     def compute_shape(self, input_shape):
         if self.type == layer_type.CONV or self.type == layer_type.POOLING:
@@ -155,6 +176,7 @@ class Module:
             
         elif self.M_type == module_types.LAST_LAYER:
             self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
+            self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out, param = activation.SOFTMAX))
 
         elif self.M_type == module_types.FEATURES:
             self.initialise('features', self.init_max, c_in, c_out)

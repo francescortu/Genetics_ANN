@@ -19,10 +19,6 @@ Things yet to be done:
 
 [X] add crossover rate (~70%)
 
-<<<<<<< HEAD
-* increase train set, decrease test set
-=======
 [X] increase train set, decrease test set
->>>>>>> 26d9d27ae65b79dfc0898fdea439ff363fb94d23
 
 * aggiungere title immagini
