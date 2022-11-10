@@ -1,17 +1,17 @@
 from src.evolution import *
 from scripts.train import test_model
 from scripts.dataloader import MNIST, cifar10
-
+import sys
 
 # set std param for MNIST dataset on which we will test the network
-DATASET = cifar10
+DATASET = MNIST
 BATCH_SIZE = 4
 NUM_CLASSES = 10
 INPUT_SIZE = 32
 INPUT_CHANNELS = 3 #3 for CIFAR10
 
-MAX_LEN_FEATURES = 3
-MAX_LEN_CLASSIFICATION = 2
+MAX_LEN_FEATURES = 10
+MAX_LEN_CLASSIFICATION = 10
 
 
 
@@ -21,15 +21,19 @@ def test_crossover(trainloader):
 
     print(bcolors.HEADER + "\nTesting one-point crossover between two random networks" + bcolors.ENDC)
     child1, child2 = GA_crossover(parent1, parent2, type = cross_type.ONE_POINT)
+    child1.print_dsge_level()
+    child2.print_dsge_level()
 
-    assert(test_model(Net(child1),trainloader)) == True, "Should be True if new netowrk is valid"
-    assert(test_model(Net(child2),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(child1),trainloader)) == True, "Should be True if new netowrk1 is valid"
+    assert(test_model(Net(child2),trainloader)) == True, "Should be True if new netowrk2 is valid"
 
     print(bcolors.HEADER + "\nTesting bit-mask crossover between two random networks" + bcolors.ENDC)
     child3, child4 = GA_crossover(child1, child2, type = cross_type.BIT_MASK)
+    child3.print_dsge_level()
+    child4.print_dsge_level()
 
-    assert(test_model(Net(child3),trainloader)) == True, "Should be True if new netowrk is valid"
-    assert(test_model(Net(child4),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(child3),trainloader)) == True, "Should be True if new netowrk3 is valid"
+    assert(test_model(Net(child4),trainloader)) == True, "Should be True if new netowrk4 is valid"
 
 
 def test_mutation_GA_level(trainloader):
@@ -74,21 +78,21 @@ def test_mutation_dsge_level(trainloader):
 
     # perform mutation at dsge level
     print(bcolors.HEADER + "\n\nTesting random mutation at dsge level...\n" + bcolors.ENDC)
-    new = dsge_mutation(netcode)
+    dsge_mutation(netcode)
     # netcode.print_dsge_level()
-    assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test grammatical mutation at dsge level
     print(bcolors.HEADER + "\nTesting grammatical mutation at dsge level...\n" + bcolors.ENDC)
-    new = dsge_mutation(netcode, type = dsge_mutation_type.GRAMMATICAL)
+    dsge_mutation(netcode, type = dsge_mutation_type.GRAMMATICAL)
     # netcode.print_dsge_level()
-    assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
     # test integer mutation at dsge level
     print(bcolors.HEADER + "\nTesting integer mutation at dsge level...\n" + bcolors.ENDC)
-    new = dsge_mutation(netcode, type =dsge_mutation_type.INTEGER)
+    dsge_mutation(netcode, type =dsge_mutation_type.INTEGER)
     # netcode.print_dsge_level()
-    assert(test_model(Net(new),trainloader)) == True, "Should be True if new netowrk is valid"
+    assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
 
 
 
@@ -115,8 +119,9 @@ def test_evolution(trainloader):
         print(bcolors.HEADER + "\nGeneration: " + str(i) +  bcolors.ENDC)
 
         for j in range(population_size):
-            parent_1_idx = np.random.randint(0, population_size)
-            parent_2_idx = np.random.randint(0, population_size)
+          
+            parent_1_idx, parent_2_idx = np.random.choice(a=np.arange(population_size), size=2, replace=False)
+            print(parent_1_idx, parent_2_idx)
             
             offspring = None
             parent1 = copy.deepcopy(nets[parent_1_idx])
@@ -145,6 +150,7 @@ def test_evolution(trainloader):
                 print(bcolors.RED)
                 offspring.print_dsge_level()
                 print(bcolors.ENDC)
+                sys.exit(1)
  
 
             print(bcolors.HEADER + "Individual: " + str(j) +  bcolors.ENDC)
@@ -163,9 +169,10 @@ def generate_random_net():
     num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
     return Net_encoding(num_feat, num_class, INPUT_CHANNELS, NUM_CLASSES, INPUT_SIZE)
 
-def test_generation_networks(trainloader):
+def test_generation_networks(trainloader, num_net = 100 ):
     print(bcolors.HEADER + "\nTesting 100 random generation of networks" + bcolors.ENDC)
-    for i in range(1):
+    number_of_errors = 0
+    for i in range(num_net):
         netcode = generate_random_net()
     
         try:
@@ -175,6 +182,10 @@ def test_generation_networks(trainloader):
 
         except:
             print(bcolors.ALT + "Error in generation: " + str(i) +  bcolors.ENDC)
+            number_of_errors += 1
+    if(num_net == 1):
+        netcode.print_dsge_level()
+    print(bcolors.ALT + "Number of errors: " + str(number_of_errors) +  bcolors.ENDC)
 
 def test_channels(netcode):    
     for i in range(1,netcode._len()):
