@@ -64,10 +64,7 @@ def test_model(model, trainloader):
 
     model.to(device)
     dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
-    if DEBUG == 0:
-            #summary(model, (3,32,32))
-            print(model)
-
+    
     try:
         inputs, labels = next(dataloader_iterator)
         inputs, labels = inputs.to(device), labels.to(device)
