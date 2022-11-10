@@ -9,8 +9,7 @@ This file contains all the functions which are used to handle the GA level.
 
 '''
 
-MAX_LEN_FEATURES = 10
-MAX_LEN_CLASSIFICATION = 3 # 2 in DENSER
+
 
 
 class Net_encoding:
@@ -22,7 +21,7 @@ class Net_encoding:
         self.last_layer = []
         self.input_shape = input_shape
         self.input_channels = c_in
-        channels = self.init_random_channel(c_in, c_out, len_features + len_classification + 1 )
+        channels = self.init_random_channel(c_in, c_out, len_features,  len_classification )
         
         if len_features > MAX_LEN_FEATURES:
             len_features = MAX_LEN_FEATURES
@@ -71,11 +70,15 @@ class Net_encoding:
         else:
             return self.last_layer[0]
 
-    def init_random_channel(self, C_in, C_out, len):
+    def init_random_channel(self, C_in, C_out, len_features, len_classification):
         tmp = C_in
         channels = []
-        for i in range(len-1):
-            out  = np.random.randint(7,30)
+        for i in range(len_features):
+            out  = np.random.randint(MIN_CHANNEL_FEATURES,MAX_CHANNEL_FEATURES)
+            channels.append( (tmp, out ) )
+            tmp = out
+        for i in range(len_classification):
+            out  = np.random.randint(MIN_CHANNEL_CLASSIFICATION,MAX_CHANNEL_CLASSIFICATION)
             channels.append( (tmp, out ) )
             tmp = out
 

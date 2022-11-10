@@ -1,7 +1,7 @@
 from src.nn_encoding import *
 from scripts.train import train, eval, test_model
 
-MUTATION_RATE = 100
+MUTATION_RATE = 30
 CROSSOVER_RATE = 70
 
 class evolution():
@@ -46,8 +46,12 @@ class evolution():
                 parent_2_idx = min(self.population_size - 1, int(np.random.exponential(self.holdout)))
             else:
                 parent_2_idx = parent_1_idx
-            child1, child2 = GA_crossover(self.population[parent_1_idx], self.population[parent_2_idx])
-            offspring = child1 if child1._len() < child2._len() else child2
+
+            if np.random.randint(100) < CROSSOVER_RATE:
+                child1, child2 = GA_crossover(self.population[parent_1_idx], self.population[parent_2_idx])
+                offspring = child1 if child1._len() < child2._len() else child2
+            else:
+                offspring = self.population[parent_1_idx]
     
             if np.random.randint(0, 100) < MUTATION_RATE:
                 GA_mutation(offspring)

@@ -31,19 +31,30 @@ def test_evolution(dataset, batch_size):
         print("Generation ", i , "'s best network accuracy: ", score, "%")
         res.append([i, score, best_net._len()])
 
-        """     with open('best_organism', 'w+') as d:
+    # test last generation best organism
+    trainloader , testloader, _, _, _ = dataset(batch_size)
+    model = train(Net(best_net), trainloader , batch_size, all=True)
+    acc = eval(model, testloader )
+
+
+    original_stdout = sys.stdout # Save a reference to the original standard output
+    with open('best_organism', 'w+') as d:
         sys.stdout = d
+        print("Best organism accuracy: ", acc, "%")
         best_net.print_dsge_level()
-        sys.stdout = original_stdout """
-        
+        sys.stdout = original_stdout
+
+    
+
     print("Best accuracy obtained: ", score)
     writer.writerows(res)
     f.close() 
 
+
 def generate_random_net():
     num_feat = np.random.randint(1, MAX_LEN_FEATURES)
     num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
-    return Net_encoding(num_feat, num_class, LAST_LAYER_SIZE, 10, 28)
+    return Net_encoding(num_feat, num_class, c_in, c_out, input_size)
 
 def create_random_gif():
     for i in range(8):
