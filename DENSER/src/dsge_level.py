@@ -27,7 +27,7 @@ that is to say the layers inside each single module and their compatibility.
 
 PATH = 'src/cnn.grammar.txt'
 MIN_KERNEL_SIZE = 1
-MAX_KERNEL_SIZE = 3
+MAX_KERNEL_SIZE = 8
 MIN_STRIDE = 1
 MAX_STRIDE = 3
 DEBUG = 0
