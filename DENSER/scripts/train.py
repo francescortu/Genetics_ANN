@@ -61,7 +61,6 @@ def test_model(model, trainloader):
     trainloader: the dataloader for the training data
     '''
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu") # the device type is automatically chosen
-
     model.to(device)
     dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
     

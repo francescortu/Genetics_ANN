@@ -27,18 +27,18 @@ that is to say the layers inside each single module and their compatibility.
 
 PATH = 'src/cnn.grammar.txt'
 MIN_KERNEL_SIZE = 1
-MAX_KERNEL_SIZE = 8
+MAX_KERNEL_SIZE = 3
 MIN_STRIDE = 1
 MAX_STRIDE = 3
 DEBUG = 0
 MAX_LEN_FEATURES = 10
+MAX_LEN_BLOCK_FEATURES = 2 # 2 in DENSER 
 MAX_LEN_CLASSIFICATION = 2 # 2 in DENSER
+MIN_CHANNEL_FEATURES = 9
+MAX_CHANNEL_FEATURES = 50
+MIN_CHANNEL_CLASSIFICATION = 64
+MAX_CHANNEL_CLASSIFICATION = 1024
 
-MAX_LEN_BLOCK_FEATURES = 5 # 2 in DENSER
-MIN_CHANNEL_FEATURES = 32
-MAX_CHANNEL_FEATURES = 256
-MIN_CHANNEL_CLASSIFICATION = 128
-MAX_CHANNEL_CLASSIFICATION = 2048
 
             
 #####################
@@ -89,6 +89,7 @@ class Layer:
         # kernel_size = np.random.randint(MIN_KERNEL_SIZE, MAX_KERNEL_SIZE)
         stride_size = np.random.randint(MIN_STRIDE, MAX_STRIDE)
         padding = np.random.choice(list(padding_type))
+        
         if padding.value == "same":
             stride_size = 1
 
@@ -122,7 +123,8 @@ class Layer:
     def compute_shape(self, input_shape):
         if self.type == layer_type.CONV or self.type == layer_type.POOLING:
             if self.type == layer_type.POOLING and self.param["pool_type"] == pool.AVG:
-                return utils.compute_output_avgpool2d(input_shape, self.param["kernel_size"], self.param["stride"], self.param["padding"])
+                return  utils.compute_output_avgpool2d(input_shape, self.param["kernel_size"], self.param["stride"], self.param["padding"])
+          
             else:
                 return utils.compute_output_conv2d(input_shape, kernel_size=self.param['kernel_size'], stride=self.param['stride'], padding=self.param['padding'])
         else:
@@ -163,7 +165,7 @@ class Module:
         self.M_type = M_type #set the type
         self.layers = []
         self.param  = {"input_channels": c_in, 'output_channels': c_out}
-        self.init_max = {'features' : 6,'classification' : 1, 'learning' : 1}
+
         self.grammar = g.Grammar(PATH)
 
         if self.M_type == module_types.FIRST_LAYER:
@@ -179,7 +181,7 @@ class Module:
             self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out, param = activation.SOFTMAX))
 
         elif self.M_type == module_types.FEATURES:
-            self.initialise('features', self.init_max, c_in, c_out)
+            self.initialise('features', MAX_LEN_BLOCK_FEATURES, c_in, c_out)
     
     def check_conv(self):
         for l in self.layers:
@@ -202,8 +204,8 @@ class Module:
                 training data: loss and accuracy
         """
         #for later purpose init_max should be of lenght 3, each a entry for a type of module
-        num_expansions = np.random.randint(2,init_max[type])
-        num_expansions = 3
+        # num_expansions = np.random.randint(2,init_max[type])
+        num_expansions = MAX_LEN_BLOCK_FEATURES
         tmp_cin = c_in
         tmp_cout = c_in
         layer_pheno = []

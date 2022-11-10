@@ -109,7 +109,7 @@ class Net_encoding:
         print(f"######## len: {self._len()} ##########")
         for i in range(self._len()):
             self.GA_encoding(i).print(i)
-            if self.GA_encoding(i).M_type == module_types.FEATURES:
+            if self.GA_encoding(i).M_type == module_types.FEATURES or self.GA_encoding(i).M_type == module_types.FIRST_LAYER:
                 print("output shape", self.compute_shape_features(self.input_shape, i+1)  )
         print("######################################")
 
