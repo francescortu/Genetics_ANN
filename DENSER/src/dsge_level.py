@@ -56,7 +56,10 @@ class layer_type(Enum):
 class pool(Enum):
     "Pooling types for DSGE."
     MAX = 0
-    AVG = 1
+    ADP_MAX = 1
+    AVG = 2
+    ADP_AVG = 3
+
 
 class activation(Enum):
     "Activation types for DSGE."
@@ -91,26 +94,29 @@ class Layer:
         stride_size = np.random.randint(MIN_STRIDE, MAX_STRIDE)
         padding = np.random.choice(list(padding_type))
         
-        if padding.value == "same":
+        if padding.value == "same": # if the padding is same, the stride must be 1; this mode doesn’t support any stride values other than 1
             stride_size = 1
-            padding_value = int(kernel_size/2)
-        elif padding.value == "valid":
-            padding_value = 0
+            
+        #elif padding.value == "valid": # padding valid is the same as no padding
+        padding_value = 0
 
-        if self.type == layer_type.POOLING:           #randomly choose a pooling type
+        # if module is of type pooling randomly choose a pooling type (max, avg) and set the other parmeters
+        if self.type == layer_type.POOLING:           
             pool_type = pool(np.random.randint(len(pool)))
 
-
-            # if pool_type == pool.MAX:
-            #     if padding.value == "same":
-            #         padding_value = 
-            #         #utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
-            # elif pool_type == pool.AVG:
-            #     if padding.value == "same":
-            #         padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
-            
-            self.param = {"pool_type" : pool_type, "kernel_size": kernel_size, "stride": stride_size, 
-                          "padding": padding_value}
+            """ if pool_type == pool.MAX:
+                if padding.value == "same":
+                    padding_value = utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
+            elif pool_type == pool.AVG:
+                if padding.value == "same":
+                    padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
+             """
+            # set parameters
+            self.param = {"pool_type" : pool_type, 
+                    "kernel_size": kernel_size, 
+                    "stride": stride_size, 
+                    "padding": padding_value}
+                          
         elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
             self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value}
         elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
@@ -127,7 +133,9 @@ class Layer:
         
     def compute_shape(self, input_shape):
         if self.type == layer_type.CONV or self.type == layer_type.POOLING:
-            if self.type == layer_type.POOLING and self.param["pool_type"] == pool.AVG:
+            if self.type == layer_type.POOLING and (self.param["pool_type"] == pool.ADP_MAX or (self.param["pool_type"] == pool.ADP_AVG)): # adaptive pooling leaves the input shape unchanged
+                return input_shape
+            elif self.type == layer_type.POOLING and self.param["pool_type"] == pool.AVG:
                 return  utils.compute_output_avgpool2d(input_shape, self.param["kernel_size"], self.param["stride"], self.param["padding"])
             else:
                 return utils.compute_output_conv2d(input_shape, kernel_size=self.param['kernel_size'], 
@@ -367,10 +375,7 @@ class Module:
         
 
 
-
-
-
-
+    # return module type and layers
     def get(self):
         return self.M_type, self.layers
 

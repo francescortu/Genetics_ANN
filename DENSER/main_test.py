@@ -5,8 +5,8 @@ from scripts.dataloader import MNIST, cifar10
 if __name__ == "__main__":
    trainloader, testloader, input_size, n_classes, input_channels = MNIST(batch_size=4)
 
-   #print("TEST GENERATION OF NETWORKS...")
-   #test_generation_networks(trainloader, 100)
+   print("TEST GENERATION OF NETWORKS...")
+   test_generation_networks(trainloader, 100)
 
    #print("TEST CROSSOVER BETWEEN TWO NETWORKS...")
    #test_crossover(trainloader)
@@ -19,3 +19,5 @@ if __name__ == "__main__":
 
    print("TEST EVOLUTION...")
    test_evolution(trainloader)
+
+
