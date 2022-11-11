@@ -131,10 +131,11 @@ class Net_encoding:
             
             c_out = self.GA_encoding(cut1-1).param['output_channels']
             c_in = self.GA_encoding(cut1).param['input_channels']
-            print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in} ')
+            
             new = min(c_in, c_out)
             self.GA_encoding(cut1-1).fix_channels(c_out = new)
             self.GA_encoding(cut1).fix_channels(c_in = new)
+            print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in}, cut1 = {cut1}, cut2 = {cut2}, firt if')
 
             c_out = self.GA_encoding(cut2-1).param['output_channels']
             c_in = self.GA_encoding(cut2).param['input_channels']
@@ -145,9 +146,9 @@ class Net_encoding:
         else:   # if cut1 == 0 we are at the beginning of the network
             c_out = self.GA_encoding(cut2-1).param['output_channels']
             c_in = self.GA_encoding(cut2).param['input_channels']
-            print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in} ')
-            new = min(c_in, c_out)
 
+            new = min(c_in, c_out)
+            print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in}, cut1 = {cut1}, cut2 = {cut2}, firt if')
             self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset
             self.GA_encoding(cut2-1).fix_channels(c_out = new)
             self.GA_encoding(cut2).fix_channels(c_in = new)
