@@ -122,6 +122,7 @@ class Net_encoding:
 
     def draw(self, gen):
         "draw the network"
+        gen.setting_channels()
         global START
         START = 0
         node_input = None
