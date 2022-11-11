@@ -71,7 +71,7 @@ def test_model(model, trainloader):
         # run inputs through the network to see if everything works
         model(inputs)
         
-
+        
 
     except Exception as e:
         print("This network will be discarded as some measures are incorrect. In particular:\n", e)

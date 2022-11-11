@@ -62,8 +62,8 @@ class activation(Enum):
     "Activation types for DSGE."
     RELU = 0
     SIGMOID = 1
-    SOFTMAX = 2
-    #TANH = 3
+    TANH = 2
+    SOFTMAX = 3
 
 class padding_type(Enum):
     "Convolution types for DSGE."
@@ -98,22 +98,22 @@ class Layer:
             padding_value = 0
 
             pool_type = pool(np.random.randint(len(pool)))
-
+    
             if pool_type == pool.MAX:
                 if padding.value == "same":
                     padding_value = utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
             elif pool_type == pool.AVG:
                 if padding.value == "same":
                     padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
-            
-            self.param = {"pool_type" : pool_type, "kernel_size": kernel_size, "stride": stride_size, "padding": padding_value}
-        elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
-            self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value}
-        elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
-            self.param = activation(np.random.randint(len(activation)-1))
-        elif self.type == layer_type.LINEAR:     #linear layer has no parameters
-            self.param = None
-    
+
+                self.param = {"pool_type" : pool_type, "kernel_size": kernel_size, "stride": stride_size, "padding": padding_value}
+            elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
+                self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value}
+            elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
+                self.param = activation(np.random.randint(len(activation)-1))
+            elif self.type == layer_type.LINEAR:     #linear layer has no parameters
+                self.param = None
+
     def init_form_encoding(self, type, param=None):
         self.type = type   #set the type
         if param is None:   #if no parameters are specified, randomly choose them
