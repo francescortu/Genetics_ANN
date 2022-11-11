@@ -156,7 +156,6 @@ class module_types(Enum):
     FEATURES = 0
     CLASSIFICATION = 1
     LAST_LAYER = 2
-    FIRST_LAYER = 3
 
 
 class Module:
@@ -167,10 +166,6 @@ class Module:
         self.param  = {"input_channels": c_in, 'output_channels': c_out}
 
         self.grammar = g.Grammar(PATH)
-
-        if self.M_type == module_types.FIRST_LAYER:
-            self.layers.append(Layer(layer_type.CONV, c_in, c_out))
-            self.layers.append(Layer(layer_type.ACTIVATION, c_out, c_out))
 
         if self.M_type == module_types.CLASSIFICATION:
             self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
@@ -310,61 +305,62 @@ class Module:
             self.layers[0].fix_channels(c_in=c_in)
             self.param['input_channels'] = c_in
 
-        if self.M_type == module_types.FEATURES and c_out is not None and c_in is not None:
-            #find_last_conv
-            last_conv = -1
-            for i in range(self.len()):
-                if self.layers[i].type == layer_type.CONV:
-                    last_conv = i
+        # if self.M_type == module_types.FEATURES and c_out is not None and c_in is not None:
+        #     #find_last_conv
+        #     last_conv = -1
+        #     for i in range(self.len()):
+        #         if self.layers[i].type == layer_type.CONV:
+        #             last_conv = i
 
-            #fix_channels
-            tmp_cin = c_in
-            tmp_cout = c_in
-            for i in range(self.len()):
-                tmp_cout = tmp_cin #if it's pooling or act
-                if i==last_conv:
-                        tmp_cout = c_out
-                elif self.layers[i]!=layer_type.POOLING:
-                    tmp_cout = self.layers[i].channels['out']
-                self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cout)
-                tmp_cin = tmp_cout
-            # in case there are only pool and act 
-            if last_conv == -1:
-                self.layers.append(Layer(layer_type.CONV,c_in=tmp_cin, c_out=c_out))
-            self.param['output_channels'] = c_out
-            self.param['input_channels'] = c_in
+        #     #fix_channels
+        #     tmp_cin = c_in
+        #     tmp_cout = c_in
+        #     for i in range(self.len()):
+        #         tmp_cout = tmp_cin #if it's pooling or act
+        #         if i==last_conv:
+        #                 tmp_cout = c_out
+        #         elif self.layers[i]!=layer_type.POOLING:
+        #             tmp_cout = self.layers[i].channels['out']
+        #         self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cout)
+        #         tmp_cin = tmp_cout
+        #     # in case there are only pool and act 
+        #     if last_conv == -1:
+        #         self.layers.append(Layer(layer_type.CONV,c_in=tmp_cin, c_out=c_out))
+        #     self.param['output_channels'] = c_out
+        #     self.param['input_channels'] = c_in
 
-        elif self.M_type == module_types.FEATURES and c_out is not None:
-            last_conv = -1
-            for i in range(self.len()):
-                if self.layers[i].type == layer_type.CONV:
-                    last_conv = i
-            #if there's no conv layer we can't change c_out
-            if last_conv == -1:
-                self.layers.append(Layer(layer_type.CONV,c_in=self.layers[last_conv].channels['in'], c_out=last_conv))
-            else:
-                tmp_cin = self.layers[last_conv].channels['in']
-                tmp_cout = c_out
-                for i in range(last_conv,self.len()):
-                    self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cout)
-                    tmp_cin = tmp_cout
-            self.param['output_channels'] = c_out
-        elif self.M_type == module_types.FEATURES and c_in is not None:
-            tmp_cin = c_in
-            tmp_cout = self.layers[0].channels['out']
-            i = 0
-            while i < self.len() and self.layers[i] != layer_type.CONV:
-                self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cin)
-                i +=1
-            if i < self.len():
-                self.layers[i].fix_channels(c_in=tmp_cin)
-                self.param['input_channels'] = c_in     
-            # case in which all layers are pool or act
-            if i == self.len():
-                self.param['input_channels'] = c_in     #
-                self.layers.append(Layer(layer_type.CONV,c_in=c_in, c_out=self.param['output_channels']))
+        # elif self.M_type == module_types.FEATURES and c_out is not None:
+        #     last_conv = -1
+        #     for i in range(self.len()):
+        #         if self.layers[i].type == layer_type.CONV:
+        #             last_conv = i
+        #     #if there's no conv layer we can't change c_out
+        #     if last_conv == -1:
+        #         self.layers.append(Layer(layer_type.CONV,c_in=self.layers[last_conv].channels['in'], c_out=last_conv))
+        #     else:
+        #         tmp_cin = self.layers[last_conv].channels['in']
+        #         tmp_cout = c_out
+        #         for i in range(last_conv,self.len()):
+        #             self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cout)
+        #             tmp_cin = tmp_cout
+        #     self.param['output_channels'] = c_out
+        # elif self.M_type == module_types.FEATURES and c_in is not None:
+        #     tmp_cin = c_in
+        #     tmp_cout = self.layers[0].channels['out']
+        #     i = 0
+        #     while i < self.len() and self.layers[i] != layer_type.CONV:
+        #         self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cin)
+        #         i +=1
+        #     if i < self.len():
+        #         self.layers[i].fix_channels(c_in=tmp_cin)
+        #         self.param['input_channels'] = c_in     
+        #     # case in which all layers are pool or act
+        #     if i == self.len():
+        #         self.param['input_channels'] = c_in     #
+        #         self.layers.append(Layer(layer_type.CONV,c_in=c_in, c_out=self.param['output_channels']))
                 
         
+
 
 
 

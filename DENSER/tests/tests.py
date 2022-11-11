@@ -183,7 +183,8 @@ def test_generation_networks(trainloader, num_net = 100 ):
         except Exception as e:
             print(bcolors.ALT + "Error in generation: " + str(i) +  bcolors.ENDC)
             number_of_errors += 1
-    
+    if num_net == 1:
+        netcode.print_dsge_level()
     print(bcolors.ALT + "Number of errors: " + str(number_of_errors) +  bcolors.ENDC)
 
 def test_channels(netcode):    
