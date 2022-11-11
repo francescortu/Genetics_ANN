@@ -65,8 +65,7 @@ class activation(Enum):
     "Activation types for DSGE."
     RELU = 0
     SIGMOID = 1
-    TANH = 2
-    SOFTMAX = 3
+    SOFTMAX = 2
 
 class padding_type(Enum):
     "Convolution types for DSGE."
@@ -396,17 +395,24 @@ class Module:
     ########################################
 
     def draw_features(self, start, length_f, last = None):
+        
         c_in = self.param['input_channels']
         c_out = self.param['output_channels']
         kernel_size = self.layers[0].param['kernel_size']
-        for i in range(int(c_out/3)):
+
+        colors = ['#ba5b83', '#bf5600']
+        layer_type = self.layers[0].type
+        color = colors[0] if layer_type == layer_type.CONV else colors[1]
+        plotted = int(c_out/3) if c_out >= 3 else c_out
+    
+        for i in range(plotted):
             x1 = 0.5 + i*0.2 + start
             x2 = x1 + 5
             x = [x1,x2,x2,x1]
             y1 = -2.5+i*(-0.3)
             y2 = 2.5 - i*0.3
             y = [y1,y1,y2,y2]
-            trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#ba5b83', edgecolor='#803655', linewidth=0.8)
+            trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor=color, edgecolor='#803655', linewidth=0.8)
             pyplot.gca().add_patch(trapezoid)
         
         
@@ -415,34 +421,44 @@ class Module:
         if length_f <= 4: font_size = 6 
         else:   font_size = int(32/length_f)
         
+        
+        activation_layer_type = ''
+        #layer_type = str(self.layers[0].type)
+        if layer_type == layer_type.CONV:
+            # get activation function type
+            activation_layer_type = str(self.layers[1].param)[11:]
+
+            plt.text(x1, y1 - 6, f'Conv2d', fontsize=font_size, fontweight='bold',  color='black')
+            plt.text(x1, y1 - 12, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color='black')
+        elif layer_type == layer_type.POOLING:
+            plt.text(x1, y1 - 6, f'Pool2d ', fontsize=font_size, fontweight='bold',  color='black')
+        
+        # add arrow to next module with activation type label if present
         plt.tick_params(axis='x', labelsize=10)
-        # get pooling type
-        pool_type = str(self.layers[2].param["pool_type"])[5:]
-        plt.text(x2+0.5, 5, f'POOL {pool_type}', fontsize=font_size, fontweight='bold',  color='black')
+        plt.text(x2+0.5, 5, f'{activation_layer_type}', fontsize=font_size, fontweight='bold',  color='black')
 
-        colors = ['#227046', '#bf5600']
+        colors = ['#35b3b5', '#3562b5', '#35b575', '#474747']
 
-        color = colors[0] if pool_type == "MAX" else colors[1]
-            
+        if activation_layer_type:
+            color = colors[self.layers[1].param.value]
+        else:
+            color = colors[3]
+        
+
         plt.annotate('', xy=(next, 0), xycoords='data',
             xytext=(x2+0.6, 0), textcoords='data',
-            arrowprops=dict(facecolor=color, edgecolor="none", width=1.2, headwidth=4, headlength=4))
-        
-        
-        # get activation function type
-        activation_layer_type = str(self.layers[1].param)[11:]
-        plt.text(x1, y1 - 6, f'Conv2d + \n{activation_layer_type}', fontsize=font_size, fontweight='bold',  color='black')
-        plt.text(x1, y1 - 10, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color='black')
+            arrowprops=dict(facecolor=color, edgecolor="none", width=2, headwidth=5, headlength=5))
 
-        if last:
+
+        if last: # represent flatten layer
             for i in range(10):
                 x1 = next + 3
-                x2 = x1 + 1
+                x2 = x1 + 2
                 x = [x1,x2,x2,x1]
                 y1 = 10 - i*2
                 y2 = y1 - 2
                 y = [y1,y1,y2,y2]
-                trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#f2d585', edgecolor='#c9b069', linewidth=0.8)
+                trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#f2d585', edgecolor='#a88d3e', linewidth=1)
                 pyplot.gca().add_patch(trapezoid)
 
             plt.text(x1-0.5, y1 - 7, 'Flatten\n layer', fontsize=font_size, fontweight='bold',  color='black')
@@ -462,28 +478,38 @@ class Module:
         if index == 0:
             c_in = 10
 
-        circle_radius = 0.8
+        circle_radius = 1
+        # horizontal and vertical distance between nodes
+        vertical_space = 6
+        horizontal_space = 9 + length_c
+
         node_input = []
         node_output = []
+
+        
+        color = random.choice(['#154e7a', '#3d9dad', '#415fba'])
+        # input nodes
         if node_in is None:
-            color = random.choice(['#154e7a', '#3d9dad', '#415fba'])
             for i in range(c_in):
-                x, y = start, (circle_radius*5)*(i-c_in/2)
+                x, y = start, (circle_radius*vertical_space)*(i-c_in/2)
                 circle = pyplot.Circle((x,y), radius=circle_radius, facecolor=color, linewidth=1.5, zorder=2)
                 pyplot.gca().add_patch(circle)
                 node_input.append({'x': x, 'y': y})
         else:
             node_input = node_in
 
+        max_output_ch = 13
+        if index != length_c : # if we are not in the last layer
+            c_out = int(c_out*max_output_ch/MAX_CHANNEL_CLASSIFICATION)  # get a representable number of nodes
+            if c_out < 2: c_out = 2
 
-        if index != length_c : # ifwe are not in the last layer
-            c_out = int(c_out* 7/30) + 1
-            
         color = random.choice(['#154e7a', '#3d9dad', '#415fba'])
-
         for i in range(c_out):
-            x, y = start + 8, (circle_radius*5)*(i-c_out/2)
-            circle = pyplot.Circle((x,y), radius= circle_radius,facecolor=color,  linewidth=1.5, zorder=2)
+            x, y = start + horizontal_space, (circle_radius*vertical_space)*(i-c_out/2)
+            if index == length_c: # last layer has always the same color
+                color = '#069655'
+            
+            circle = pyplot.Circle((x,y), radius= circle_radius, facecolor=color,  linewidth=1.5, zorder=2)
             pyplot.gca().add_patch(circle)
             node_output.append({'x': x, 'y': y})
 
@@ -501,12 +527,12 @@ class Module:
             for i,node in enumerate(node_input):
                 self.line_between_two_nodes(node, {'x': start - 9, 'y': -4.5 + i})
 
-            end = start + 8*(length_c+1)
+            end = start + horizontal_space*(length_c+1)
             self.add_label(start, end, 'Classification', font_size)
 
 
         node_input = node_output
-        next = start + 8
+        next = start + horizontal_space 
         return next, node_input
 
 
@@ -515,10 +541,12 @@ class Module:
         pyplot.gca().add_line(line)
 
     def add_label(self, x1, x2, name, font_size):
-        line = pyplot.Line2D((x1, x2), (-25, -25), color='#333232', linewidth=0.5)
-        line1 = pyplot.Line2D((x1, x1), (-25, -22), color='#333232', linewidth=0.5)
-        line2 = pyplot.Line2D((x2, x2), (-25, -22), color='#333232', linewidth=0.5)
+        y1 = -40
+        y2 = y1 + 3
+        line = pyplot.Line2D((x1, x2), (y1, y1), color='#333232', linewidth=0.5)
+        line1 = pyplot.Line2D((x1, x1), (y1, y2), color='#333232', linewidth=0.5)
+        line2 = pyplot.Line2D((x2, x2), (y1, y2), color='#333232', linewidth=0.5)
         pyplot.gca().add_line(line)
         pyplot.gca().add_line(line1)
         pyplot.gca().add_line(line2)
-        plt.text(x1 + (x2 -x1)/3 - 1, -27, name,  fontweight='bold', fontsize=font_size,  color='black')
+        plt.text(x1 + (x2 -x1)/3 - 1, y1 - 2, name,  fontweight='bold', fontsize=font_size,  color='black')
