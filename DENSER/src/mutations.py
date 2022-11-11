@@ -44,9 +44,9 @@ def GA_mutation(offspring, type=None):
             c_out =  np.random.randint(7,30)
             cut_type = offspring.GA_encoding(cut).M_type
             if cut_type == module_types.FEATURES:
-                module = Module(module_types.FEATURES, c_in = c_in, c_out = c_out)
+                module = Module(module_types.FEATURES,  c_out = c_out)
             elif cut_type == module_types.CLASSIFICATION:
-                module = Module(module_types.CLASSIFICATION, c_in = c_in, c_out = c_out)
+                module = Module(module_types.CLASSIFICATION,  c_out = c_out)
 
             GA_add(offspring, cut, module)
         else:
@@ -69,8 +69,7 @@ def GA_add(offspring, cut, module):
         offspring.features[cut] = copy.deepcopy(module)
         offspring.features.extend(tmp) # add the rest of the modules
 
-        #fix channels before and after the cut
-        offspring.fix_channels(cut, cut+1) 
+
      
 
     elif module.M_type == module_types.CLASSIFICATION:
@@ -81,7 +80,7 @@ def GA_add(offspring, cut, module):
         offspring.classification[cut- offspring.len_features()] = copy.deepcopy(module)
         offspring.classification.extend(tmp) # add the rest of the modules
         #fix channels before and after the cut        
-        offspring.fix_channels(cut, cut+1)
+
   
 
     
@@ -135,15 +134,13 @@ def GA_remove(offspring):
         if cut_type == module_types.FEATURES:
             #remove the module
             offspring.features.pop(cut)
-            #fix channels
-            offspring.fix_channels_deletion(cut)
+
 
 
         elif cut_type == module_types.CLASSIFICATION:
             #remove the module
             offspring.classification.pop(cut - offspring.len_features())
-            #fix channels
-            offspring.fix_channels_deletion(cut)
+
     
 
     
@@ -199,7 +196,7 @@ def grammatical_mutation(offspring):
         #identify the layer
         type = offspring.features[gene].layers[layer].type
         #build a new layer mantaining the same type and the number of channels
-        new_layer = Layer(type, c_in = offspring.features[gene].layers[layer].channels['in'], c_out = offspring.features[gene].layers[layer].channels['out'])  
+        new_layer = Layer(type,  c_out = offspring.features[gene].layers[layer].channels['out'])  
         # add the new layer
         offspring.features[gene].layers[layer] = new_layer
         
@@ -210,7 +207,7 @@ def grammatical_mutation(offspring):
         #identify the layer
         type = offspring.classification[gene - offspring.len_features()].layers[layer].type
         #build a new layer mantaining the same type and the number of channels
-        new_layer = Layer(type, c_in = offspring.classification[gene - offspring.len_features()].layers[layer].channels['in'], c_out = offspring.classification[gene - offspring.len_features()].layers[layer].channels['out'])
+        new_layer = Layer(type, c_out = offspring.classification[gene - offspring.len_features()].layers[layer].channels['out'])
         # add the new layer
         offspring.classification[gene - offspring.len_features()].layers[layer] = new_layer
 
@@ -220,7 +217,7 @@ def grammatical_mutation(offspring):
         #identify the layer
         type = offspring.last_layer[0].layers[layer].type
         #build a new layer mantaining the same type and the number of channels
-        new_layer = Layer(type, c_in = offspring.last_layer[0].layers[layer].channels['in'], c_out = offspring.last_layer[0].layers[layer].channels['out'])
+        new_layer = Layer(type,  c_out = offspring.last_layer[0].layers[layer].channels['out'])
 
         # add the new layer
         offspring.last_layer[0].layers[layer] = new_layer
@@ -239,18 +236,14 @@ def integer_mutation(offspring):
     gene_type = offspring.GA_encoding(gene).M_type
     
     print("integer mutation", gene_type)
+
     #change expansion rules within the gene by creating a new module
-    new_module = Module(gene_type, c_in = offspring.GA_encoding(gene).param['input_channels'], c_out = offspring.GA_encoding(gene).param['output_channels'])
+    new_module = Module(gene_type, c_out = offspring.GA_encoding(gene).param['output_channels'])
 
     #replace new gene
     if gene_type == module_types.FEATURES:
-        if new_module.check_conv():
-            offspring.features[gene] = new_module
-        else:
-            new_module.fix_channels(c_in=offspring.GA_encoding(gene).param['input_channels'], c_out=offspring.GA_encoding(gene).param['input_channels'])
-            offspring.features[gene] = new_module
-            offspring.fix_channels(gene, gene + 1)
-   
+        offspring.features[gene] = new_module
+
     elif gene_type == module_types.CLASSIFICATION:
         offspring.classification[gene - offspring.len_features()] = new_module
     else:
