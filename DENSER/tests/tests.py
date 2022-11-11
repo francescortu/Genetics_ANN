@@ -177,11 +177,13 @@ def test_generation_networks(trainloader, num_net = 100 ):
     
         try:
         # netcode.print_dsge_level()
-            assert(test_model(Net(netcode),trainloader)) == True, "Should be True if new netowrk is valid"
-            assert(test_channels(netcode)) == True, "Should be True if new netowrk is valid"
+            model = Net(netcode)
+            assert(test_model(model,trainloader)) == True, "Should be True if new netowrk is valid"
+            assert(test_channels(netcode)) == True, "Should be True if new network has valid channels"
 
         except Exception as e:
             print(bcolors.ALT + "Error in generation: " + str(i) +  bcolors.ENDC)
+            print(e)
             number_of_errors += 1
     if num_net == 1:
         netcode.print_dsge_level()
