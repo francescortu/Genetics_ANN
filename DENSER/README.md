@@ -7,6 +7,12 @@ The DENSER approach is based on the idea of using a grammatic to describe the ar
 
 ### Grammatic
 
+## Usage
+To run type:
+```bash
+$ python3 main.py
+```
+The programm will print onf best_organisms the best performing CNNs found during evolution.
 
 ## Structure of the repository
 ``` bash
@@ -21,9 +27,11 @@ The DENSER approach is based on the idea of using a grammatic to describe the ar
 │   ├── train.py
 │   └── utils.py
 ├── src
+│   ├── cnn.grammar.txt
 │   ├── dsge_level.py
 │   ├── evolution.py
 │   ├── ga_level.py
+│   ├── grammar.py
 │   ├── mutations.py
 │   ├── nn_encoding.py
 ├── tests

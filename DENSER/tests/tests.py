@@ -132,16 +132,16 @@ def test_evolution(trainloader):
                 child1, child2 = GA_crossover(parent1, parent2)
                 offspring = child1 if child1._len() < child2._len() else child2
                 assert(test_model(Net(offspring),trainloader)) == True, bcolors.RED +  "Should be True if new netowrk is valid" + bcolors.ENDC
-                test_channels(offspring)
+       
 
                 # mutation GA level
                 GA_mutation(offspring)
-                test_channels(offspring)
+
                 assert(test_model(Net(offspring),trainloader)) == True, bcolors.RED +  "Should be True if new netowrk is valid" + bcolors.ENDC
                 
                 # mutation dsge level
                 dsge_mutation(offspring)
-                test_channels(offspring)
+     
                 assert(test_model(Net(offspring),trainloader)) == True, "Should be True if new netowrk is valid"
 
             except Exception as e:
@@ -169,7 +169,15 @@ def generate_random_net():
     num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
     return Net_encoding(num_feat, num_class, INPUT_CHANNELS, NUM_CLASSES, INPUT_SIZE)
 
-def test_generation_networks(trainloader, num_net = 100 ):
+def test_generation_networks(trainloader, num_net = 100, only_print = False ):
+    if only_print:
+        print(bcolors.HEADER + "\nSimply print a net\n" + bcolors.ENDC)
+        netcode = generate_random_net()
+        netcode.print_dsge_level()
+        netcode.setting_channels()
+        netcode.print_dsge_level()
+        return
+    
     print(bcolors.HEADER + "\nTesting 100 random generation of networks" + bcolors.ENDC)
     number_of_errors = 0
     for i in range(num_net):
@@ -179,7 +187,7 @@ def test_generation_networks(trainloader, num_net = 100 ):
         # netcode.print_dsge_level()
             model = Net(netcode)
             assert(test_model(model,trainloader)) == True, "Should be True if new netowrk is valid"
-            assert(test_channels(netcode)) == True, "Should be True if new network has valid channels"
+        
 
         except Exception as e:
             print(bcolors.ALT + "Error in generation: " + str(i) +  bcolors.ENDC)
@@ -189,12 +197,7 @@ def test_generation_networks(trainloader, num_net = 100 ):
         netcode.print_dsge_level()
     print(bcolors.ALT + "Number of errors: " + str(number_of_errors) +  bcolors.ENDC)
 
-def test_channels(netcode):    
-    for i in range(1,netcode._len()):
-        if i != netcode.len_features():
-            if netcode.GA_encoding(i-1).param['output_channels'] != netcode.GA_encoding(i).param['input_channels']:
-              raise Exception(bcolors.RED +  "Error in channels" + bcolors.ENDC)
-    return True
+
 
 
 

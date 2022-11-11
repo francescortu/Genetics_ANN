@@ -75,8 +75,8 @@ class padding_type(Enum):
 
 class Layer:
     "Layer class."
-    def __init__(self, type=None, c_in = None, c_out = None, param=None):
-
+    def __init__(self, type=None, c_out = None, param=None):
+        c_in = "not already defined"
         self.channels = {'in': c_in, 'out': c_out}
         if type is None: # Random init, no type specified (could be pooling, conv, activation, linear)
             self.random_init()
@@ -143,17 +143,6 @@ class Layer:
         else:
             return input_shape
             
-    def fix_channels(self, c_in=None, c_out=None):
-        if (c_in is not None and c_out is not None) or (c_in is not None):
-            self.channels['in'] = c_in
-            if self.type != layer_type.CONV and self.type != layer_type.LINEAR:
-                self.channels['out'] = c_in
-        if c_out is not None:
-            self.channels['out'] = c_out
-            if self.type != layer_type.CONV and self.type != layer_type.LINEAR:
-                self.channels['in'] = c_out
-
-
 
     def get(self):  #return the gene
         return self.type, self.param, self.channels
@@ -173,49 +162,42 @@ class module_types(Enum):
 
 class Module:
     "GA_encoding class. The GA_encoding is composed of a list of genes."
-    def __init__(self, M_type, c_in = None, c_out = None):
+    def __init__(self, M_type, c_out = None):
         self.M_type = M_type #set the type
         self.layers = []
-        self.param  = {"input_channels": c_in, 'output_channels': c_out}
+        c_in = "not already defined"
 
         self.grammar = g.Grammar(PATH)
 
         if self.M_type == module_types.CLASSIFICATION:
-            self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
-            self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out))
+            tmp_cout = np.random.randint(MIN_CHANNEL_CLASSIFICATION, MAX_CHANNEL_CLASSIFICATION) 
+            self.layers.append(Layer(layer_type.LINEAR, c_out = tmp_cout))
+            self.layers.append(Layer(layer_type.ACTIVATION, c_out = tmp_cout))
             
         elif self.M_type == module_types.LAST_LAYER:
-            self.layers.append(Layer(layer_type.LINEAR, c_in = c_in, c_out = c_out))
-            self.layers.append(Layer(layer_type.ACTIVATION, c_in = c_out, c_out = c_out, param = activation.SOFTMAX))
+            tmp_cout = c_out
+            self.layers.append(Layer(layer_type.LINEAR, c_out = c_out))
+            self.layers.append(Layer(layer_type.ACTIVATION, c_out = c_out, param = activation.SOFTMAX))
 
         elif self.M_type == module_types.FEATURES:
-            self.initialise('features', MAX_LEN_BLOCK_FEATURES, c_in, c_out)
+            self.initialise('features', MAX_LEN_BLOCK_FEATURES, c_out)
+            tmp_cout = self.layers[-1].channels["out"]
     
+        self.param  = {"input_channels": c_in, 'output_channels': tmp_cout}
+
     def check_conv(self):
         for l in self.layers:
             if l.type == layer_type.CONV:
                 return True
         return False
 
-    def initialise(self, type, init_max,  c_in, c_out, reuse=0.2):
+    def initialise(self, type, c_out, reuse=0.2):
         """
-            Randomly creates a module
-            Parameters
-            ----------
-            grammar : Grammar
-                grammar instace that stores the expansion rules
-            reuse : float
-                likelihood of reusing an existing layer
-            Returns
-            -------
-            score_history : dict
-                training data: loss and accuracy
+        Initialise the module with a random sequence of layers.
         """
         #for later purpose init_max should be of lenght 3, each a entry for a type of module
         # num_expansions = np.random.randint(2,init_max[type])
         num_expansions = MAX_LEN_BLOCK_FEATURES
-        tmp_cin = c_in
-        tmp_cout = c_in
         layer_pheno = []
         #Initialise layers
         last_conv = 0
@@ -231,24 +213,13 @@ class Module:
                 last_conv = idx
         
         for idx in range(num_expansions):
-            if idx==last_conv:
-                tmp_cout = c_out
-            elif layer_pheno[idx]!=layer_type.POOLING:
-                tmp_cout = np.random.randint(7,30) 
+            tmp_cout = np.random.randint(MIN_CHANNEL_FEATURES, MAX_CHANNEL_FEATURES)
 
-            self.layers.append(Layer(layer_pheno[idx], c_in = tmp_cin , c_out = tmp_cout))
-            self.layers.append(Layer(layer_type.ACTIVATION, c_in = tmp_cout , c_out = tmp_cout))
+            self.layers.append(Layer(layer_pheno[idx], c_out = tmp_cout))
+            self.layers.append(Layer(layer_type.ACTIVATION,  c_out = tmp_cout))
             #setting channels for next iter
             tmp_cin = tmp_cout
 
-    
-    def init_random_channel(self, C_in, C_out, len):
-        tmp = C_in
-        channels = []
-        for i in range(len-1):
-            out  = np.random.randint(7,30)
-            channels.append( (tmp, out ) )
-            tmp = out
     
     def l_type(self,l_name):
         if l_name == 'conv':
@@ -307,72 +278,7 @@ class Module:
             output_shape = self.layers[i].compute_shape(output_shape)
         return output_shape
 
-    def fix_channels(self,c_in=None, c_out=None):
-        "fix the channels of the layers"
-        if (c_out is not None):
-            for i in range(self.len()):
-                self.layers[i].fix_channels(c_out=c_out)
-            self.param['output_channels'] = c_out
-            
-        if(c_in is not None):
-            self.layers[0].fix_channels(c_in=c_in)
-            self.param['input_channels'] = c_in
-
-        # if self.M_type == module_types.FEATURES and c_out is not None and c_in is not None:
-        #     #find_last_conv
-        #     last_conv = -1
-        #     for i in range(self.len()):
-        #         if self.layers[i].type == layer_type.CONV:
-        #             last_conv = i
-
-        #     #fix_channels
-        #     tmp_cin = c_in
-        #     tmp_cout = c_in
-        #     for i in range(self.len()):
-        #         tmp_cout = tmp_cin #if it's pooling or act
-        #         if i==last_conv:
-        #                 tmp_cout = c_out
-        #         elif self.layers[i]!=layer_type.POOLING:
-        #             tmp_cout = self.layers[i].channels['out']
-        #         self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cout)
-        #         tmp_cin = tmp_cout
-        #     # in case there are only pool and act 
-        #     if last_conv == -1:
-        #         self.layers.append(Layer(layer_type.CONV,c_in=tmp_cin, c_out=c_out))
-        #     self.param['output_channels'] = c_out
-        #     self.param['input_channels'] = c_in
-
-        # elif self.M_type == module_types.FEATURES and c_out is not None:
-        #     last_conv = -1
-        #     for i in range(self.len()):
-        #         if self.layers[i].type == layer_type.CONV:
-        #             last_conv = i
-        #     #if there's no conv layer we can't change c_out
-        #     if last_conv == -1:
-        #         self.layers.append(Layer(layer_type.CONV,c_in=self.layers[last_conv].channels['in'], c_out=last_conv))
-        #     else:
-        #         tmp_cin = self.layers[last_conv].channels['in']
-        #         tmp_cout = c_out
-        #         for i in range(last_conv,self.len()):
-        #             self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cout)
-        #             tmp_cin = tmp_cout
-        #     self.param['output_channels'] = c_out
-        # elif self.M_type == module_types.FEATURES and c_in is not None:
-        #     tmp_cin = c_in
-        #     tmp_cout = self.layers[0].channels['out']
-        #     i = 0
-        #     while i < self.len() and self.layers[i] != layer_type.CONV:
-        #         self.layers[i].fix_channels(c_in=tmp_cin, c_out=tmp_cin)
-        #         i +=1
-        #     if i < self.len():
-        #         self.layers[i].fix_channels(c_in=tmp_cin)
-        #         self.param['input_channels'] = c_in     
-        #     # case in which all layers are pool or act
-        #     if i == self.len():
-        #         self.param['input_channels'] = c_in     #
-        #         self.layers.append(Layer(layer_type.CONV,c_in=c_in, c_out=self.param['output_channels']))
-                
-        
+ 
 
 
     # return module type and layers

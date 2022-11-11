@@ -4,7 +4,7 @@ from src.mutations import *
 class Net(nn.Module):
     def __init__(self, Net_encod):
         super().__init__()
-        
+        Net_encod.setting_channels()
         self.layer_list = []
 
         # initial input shape will be updated after each layer addition
