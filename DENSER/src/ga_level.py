@@ -1,5 +1,6 @@
 from src.dsge_level import *
 import sys
+
 '''
 
 This file contains all the functions which are used to handle the GA level.
@@ -11,8 +12,6 @@ This file contains all the functions which are used to handle the GA level.
     say those operations which manipulate the network structure
 
 '''
-
-
 
 
 class Net_encoding:
@@ -101,7 +100,9 @@ class Net_encoding:
         for i in range(max_len):
             output_shape = self.GA_encoding(i).compute_shape(output_shape)
         return output_shape
-        
+    
+    def get_input_shape(self):
+        return self.input_shape
 
     def get(self):
         return self.GA_encoding
