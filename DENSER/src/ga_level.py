@@ -11,7 +11,7 @@ This file contains all the functions which are used to handle the GA level.
     say those operations which manipulate the network structure
 
 '''
-
+DEBUG = 0
 
 
 
@@ -131,29 +131,73 @@ class Net_encoding:
             
             c_out = self.GA_encoding(cut1-1).param['output_channels']
             c_in = self.GA_encoding(cut1).param['input_channels']
-            
-            new = min(c_in, c_out)
-            self.GA_encoding(cut1-1).fix_channels(c_out = new)
-            self.GA_encoding(cut1).fix_channels(c_in = new)
-            print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in}, cut1 = {cut1}, cut2 = {cut2}, firt if')
 
+            if self.GA_encoding(cut1).M_type == module_types.FEATURES:
+                self.fix_channels_feat(cut1,c_in,c_out)
+            else:
+                new = min(c_in, c_out)
+                self.GA_encoding(cut1-1).fix_channels(c_out = new)
+                self.GA_encoding(cut1).fix_channels(c_in = new)
+
+            if DEBUG == 0:
+                print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in}, cut1 = {cut1}, cut2 = {cut2}, first if')
+                tmp_cout = self.GA_encoding(cut1-1).param['output_channels']
+                tmp_cin = self.GA_encoding(cut1).param['input_channels']
+                print(f' After change: c_out = { tmp_cout } c_in = {tmp_cin}, cut1 = {cut1}, cut2 = {cut2}, first if')
+            
             c_out = self.GA_encoding(cut2-1).param['output_channels']
             c_in = self.GA_encoding(cut2).param['input_channels']
-            new = min(c_in, c_out)
-            self.GA_encoding(cut2-1).fix_channels(c_out = new)
-            self.GA_encoding(cut2).fix_channels(c_in = new)
+            if self.GA_encoding(cut2).M_type == module_types.FEATURES:
+                self.fix_channels_feat(cut2,c_in,c_out)
+            else:
+                new = min(c_in, c_out)
+                self.GA_encoding(cut2-1).fix_channels(c_out = new)
+                self.GA_encoding(cut2).fix_channels(c_in = new)
+            
+            
         
         else:   # if cut1 == 0 we are at the beginning of the network
             c_out = self.GA_encoding(cut2-1).param['output_channels']
             c_in = self.GA_encoding(cut2).param['input_channels']
 
-            new = min(c_in, c_out)
-            print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in}, cut1 = {cut1}, cut2 = {cut2}, firt if')
-            self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset
-            self.GA_encoding(cut2-1).fix_channels(c_out = new)
-            self.GA_encoding(cut2).fix_channels(c_in = new)
+            if self.GA_encoding(cut2).M_type == module_types.FEATURES:
+                self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset
+                self.fix_channels_feat(cut2,c_in,c_out)
+            else:
+                new = min(c_in, c_out)
+                self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset            
+                self.GA_encoding(cut2-1).fix_channels(c_out = new)
+                self.GA_encoding(cut2).fix_channels(c_in = new)
+
+            if DEBUG == 0:
+                print(f' Im in fixing channles: c_out = {c_out} c_in = {c_in}, cut1 = {cut1}, cut2 = {cut2}, second if')
+                tmp_cout = self.GA_encoding(cut1-1).param['output_channels']
+                tmp_cin = self.GA_encoding(cut1).param['input_channels']
+                print(f' After change: c_out = {tmp_cout} c_in = {tmp_cin}, cut1 = {cut1}, cut2 = {cut2}, second if')
+            
+            
+            
 
         self.fix_first_classification()
+    
+    def fix_channels_feat(self, cut, c_in, c_out):
+        #if left block is conv and right is pool 
+        if self.GA_encoding(cut-1).check_conv() and not self.GA_encoding(cut).check_conv():
+            new = c_in
+            self.GA_encoding(cut-1).fix_channels(c_out = new)
+            #self.GA_encoding(cut1).fix_channels(c_in = new) c_in is already
+        #left is pool
+        elif not self.GA_encoding(cut-1).check_conv():
+            idx = cut
+            new = c_out
+            while not self.GA_encoding(idx).check_conv():
+                self.GA_encoding(idx).fix_channels(c_in = new, c_out = new)
+                idx += 1
+            self.GA_encoding(idx).fix_channels(c_in = new) 
+        else: 
+            new = min(c_in, c_out)
+            self.GA_encoding(cut-1).fix_channels(c_out = new)
+            self.GA_encoding(cut).fix_channels(c_in = new)
 
 
     def fix_channels_deletion(self, cut):
