@@ -30,9 +30,9 @@ class Net_encoding:
             len_features = MAX_LEN_FEATURES
         if len_classification > MAX_LEN_CLASSIFICATION:
             len_classification = MAX_LEN_CLASSIFICATION
-        self.features.append(Module(module_types.FIRST_LAYER, channels[0][0], channels[0][1]))
+
         # add features blocks
-        for i in range(1,len_features):
+        for i in range(0,len_features):
             self.features.append(Module(module_types.FEATURES, c_in = channels[i][0], c_out = channels[i][1]))
             if not self.features[-1].check_conv():
                 channels[i+1] = (channels[i][0], channels[i+1][1])
@@ -109,7 +109,7 @@ class Net_encoding:
         print(f"######## len: {self._len()} ##########")
         for i in range(self._len()):
             self.GA_encoding(i).print(i)
-            if self.GA_encoding(i).M_type == module_types.FEATURES or self.GA_encoding(i).M_type == module_types.FIRST_LAYER:
+            if self.GA_encoding(i).M_type == module_types.FEATURES:
                 print("output shape", self.compute_shape_features(self.input_shape, i+1)  )
         print("######################################")
 
