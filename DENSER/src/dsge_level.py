@@ -311,7 +311,7 @@ class Module:
         if (c_out is not None):
             for i in range(self.len()):
                 self.layers[i].fix_channels(c_out=c_out)
-                self.param['output_channels'] = c_out
+            self.param['output_channels'] = c_out
             
         if(c_in is not None):
             self.layers[0].fix_channels(c_in=c_in)
