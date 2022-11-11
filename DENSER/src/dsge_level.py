@@ -62,8 +62,8 @@ class activation(Enum):
     "Activation types for DSGE."
     RELU = 0
     SIGMOID = 1
-    SOFTMAX = 2
-    #TANH = 3
+    TANH = 2
+    SOFTMAX = 3
 
 class padding_type(Enum):
     "Convolution types for DSGE."

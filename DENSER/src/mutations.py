@@ -241,10 +241,16 @@ def integer_mutation(offspring):
     print("integer mutation", gene_type)
     #change expansion rules within the gene by creating a new module
     new_module = Module(gene_type, c_in = offspring.GA_encoding(gene).param['input_channels'], c_out = offspring.GA_encoding(gene).param['output_channels'])
-    
+
     #replace new gene
     if gene_type == module_types.FEATURES:
-        offspring.features[gene] = new_module
+        if new_module.check_conv():
+            offspring.features[gene] = new_module
+        else:
+            new_module.fix_channels(c_in=offspring.GA_encoding(gene).param['input_channels'], c_out=offspring.GA_encoding(gene).param['input_channels'])
+            offspring.features[gene] = new_module
+            offspring.fix_channels(gene, gene + 1)
+   
     elif gene_type == module_types.CLASSIFICATION:
         offspring.classification[gene - offspring.len_features()] = new_module
     else:

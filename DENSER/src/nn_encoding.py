@@ -34,6 +34,8 @@ class Net(nn.Module):
                     return nn.Sigmoid()
                 if dsge_encod.param == activation.TANH:
                     return nn.Tanh()
+                if dsge_encod.param == activation.SOFTMAX:
+                    return nn.Softmax()
             if dsge_encod.type == layer_type.POOLING:
                 if dsge_encod.param["pool_type"] == pool.MAX:
                     return nn.MaxPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
