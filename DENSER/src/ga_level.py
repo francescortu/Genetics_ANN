@@ -36,12 +36,13 @@ class Net_encoding:
             self.features.append(Module(module_types.FEATURES, c_in = channels[i][0], c_out = channels[i][1]))
             if not self.features[-1].check_conv():
                 channels[i+1] = (channels[i][0], channels[i+1][1])
+                channels[i] = (channels[i][0], channels[i][0])
                 self.features[-1].fix_channels(c_in = channels[i][0], c_out = channels[i][0])
 
         k = len_features
         # set the input channels of the classification block: the flatten output of the features block
         channels[k] = ((self.compute_shape_features(self.input_shape)**2) * channels[k-1][1], channels[k][1])  
-
+ 
         # add classification blocks
         for i in range(len_classification):
             self.classification.append(Module(module_types.CLASSIFICATION,  c_in = channels[k+i][0], c_out = channels[k+i][1]))
