@@ -165,8 +165,8 @@ class Net_encoding:
                 self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset
                 self.fix_channels_feat(cut2,c_in,c_out)
             else:
+                self.fix_channels_feat(1, self.GA_encoding(1).param['input_channels'], self.input_channels) #cut =1 becayse in the next method it calls (cut-1)
                 new = min(c_in, c_out)
-                self.GA_encoding(cut1).fix_channels(c_in = self.input_channels) # the input channels of the first block depend from the dataset            
                 self.GA_encoding(cut2-1).fix_channels(c_out = new)
                 self.GA_encoding(cut2).fix_channels(c_in = new)
 
