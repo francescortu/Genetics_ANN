@@ -93,20 +93,24 @@ class Layer:
         
         if padding.value == "same":
             stride_size = 1
-
-        if self.type == layer_type.POOLING:           #randomly choose a pooling type
+            padding_value = int(kernel_size/2)
+        elif padding.value == "valid":
             padding_value = 0
 
+        if self.type == layer_type.POOLING:           #randomly choose a pooling type
             pool_type = pool(np.random.randint(len(pool)))
 
-            if pool_type == pool.MAX:
-                if padding.value == "same":
-                    padding_value = utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
-            elif pool_type == pool.AVG:
-                if padding.value == "same":
-                    padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
+
+            # if pool_type == pool.MAX:
+            #     if padding.value == "same":
+            #         padding_value = 
+            #         #utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
+            # elif pool_type == pool.AVG:
+            #     if padding.value == "same":
+            #         padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
             
-            self.param = {"pool_type" : pool_type, "kernel_size": kernel_size, "stride": stride_size, "padding": padding_value}
+            self.param = {"pool_type" : pool_type, "kernel_size": kernel_size, "stride": stride_size, 
+                          "padding": padding_value}
         elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
             self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value}
         elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
@@ -125,9 +129,9 @@ class Layer:
         if self.type == layer_type.CONV or self.type == layer_type.POOLING:
             if self.type == layer_type.POOLING and self.param["pool_type"] == pool.AVG:
                 return  utils.compute_output_avgpool2d(input_shape, self.param["kernel_size"], self.param["stride"], self.param["padding"])
-          
             else:
-                return utils.compute_output_conv2d(input_shape, kernel_size=self.param['kernel_size'], stride=self.param['stride'], padding=self.param['padding'])
+                return utils.compute_output_conv2d(input_shape, kernel_size=self.param['kernel_size'], 
+                                                   stride=self.param['stride'], padding=self.param['padding'])
         else:
             return input_shape
             
