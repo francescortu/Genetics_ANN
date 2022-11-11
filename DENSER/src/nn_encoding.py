@@ -6,11 +6,17 @@ class Net(nn.Module):
         super().__init__()
         
         self.layer_list = []
-        
+
+        # initial input shape will be updated after each layer addition
+        self.current_input_shape = Net_encod.get_input_shape()
+
         for i in range(Net_encod.len_features()):
             for j in range(Net_encod.GA_encoding(i).len()):
                 layer = self.make_layer(Net_encod.GA_encoding(i).layers[j])
                 self.layer_list.append(layer)
+
+                # update current input shape
+                self.current_input_shape = Net_encod.GA_encoding(i).layers[j].compute_shape(self.current_input_shape)
 
         self.layer_list.append(nn.Flatten())
 
@@ -21,6 +27,8 @@ class Net(nn.Module):
         self.layer_list.append(self.make_layer(Net_encod.last_layer[0].layers[0]) )
         self.layers = nn.Sequential(*self.layer_list)
         self.Net_encoding = Net_encod
+        
+        
 
     def make_layer(self, dsge_encod):
             if dsge_encod.type == layer_type.CONV:
@@ -39,9 +47,13 @@ class Net(nn.Module):
             if dsge_encod.type == layer_type.POOLING:
                 if dsge_encod.param["pool_type"] == pool.MAX:
                     return nn.MaxPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
-                if dsge_encod.param["pool_type"] == pool.AVG:
+                elif dsge_encod.param["pool_type"] == pool.ADP_MAX:
+                    return nn.AdaptiveMaxPool2d(self.current_input_shape)
+                elif dsge_encod.param["pool_type"] == pool.AVG:
                     return nn.AvgPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
-                    
+                elif dsge_encod.param["pool_type"] == pool.ADP_AVG:
+                    return nn.AdaptiveAvgPool2d(self.current_input_shape)
+
     def forward(self, x):
         out = self.layers(x)
         return out
