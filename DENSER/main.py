@@ -54,28 +54,30 @@ def test_evolution(dataset, batch_size):
 def generate_random_net():
     num_feat = np.random.randint(1, MAX_LEN_FEATURES)
     num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
-    return Net_encoding(num_feat, num_class, c_in, c_out, input_size)
+    return Net_encoding(num_feat, num_class, 1, 10,28)
 
 def create_random_gif():
     for i in range(8):
         enc = generate_random_net()
         enc.draw(i)
 
-    frames = []
+    """ frames = []
     # Build GIF
 
     for filename in listdir('images_net'):
         image = imageio.imread('images_net/'+filename)
         frames.append(image)
 
-    imageio.mimsave('nn_evolution.gif', frames, format='GIF', duration=1)
+    imageio.mimsave('nn_evolution.gif', frames, format='GIF', duration=1) """
 
 if __name__ == "__main__":
    
     # load dataset for the following test function
-    batch_size = 4
+    """ batch_size = 4
 
     dataset = MNIST
     print("\n\n Evolution of a population of networks: \n\n")
-    test_evolution(dataset, batch_size)
+    test_evolution(dataset, batch_size) """
+
+    create_random_gif()
 

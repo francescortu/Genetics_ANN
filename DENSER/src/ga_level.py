@@ -189,8 +189,9 @@ class Net_encoding:
             elif self.GA_encoding(i).M_type == module_types.CLASSIFICATION:
                 index = i - self.len_features()
                 START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, index, node_in = node_input)
+            
             else:
-                START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, length_c, node_in = node_input)
+                START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, length_c, node_in = node_input) 
 
         # add title
         plt.title(f"Network representation, generation: {gen}")
