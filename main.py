@@ -46,7 +46,7 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         best_net = this_generation_best
         print("Generation ", i , "'s best network accuracy: ", best_score, "%")
         for j in range(population_size):
-            res.append([i, j, gen[j]['score'], gen[j]['len'], best_score, len(best_net)])
+            res.append([i, j, gen[j]['score'], gen[j]['len'], best_score, best_net._len()])
 
     # test last generation best organism
     trainloader , testloader, _, _, _ = dataset(batch_size)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     
 
     # run evolution
-    print("\n\n Evolution of a population of networks: \n\n")
+    print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size} \n\n")
     run_evolution(dataset, population_size, num_generations, batch_size, subpath = 'prova')
 
     #plot_results(population_size)
