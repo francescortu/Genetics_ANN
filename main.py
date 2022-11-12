@@ -54,7 +54,7 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
     acc = eval(model, testloader)
 
     original_stdout = sys.stdout # Save a reference to the original standard output
-    with open('best_organism', 'w+') as d:
+    with open(f'{path}/best_organism', 'w+') as d:
         sys.stdout = d
         print("Best organism accuracy: ", acc, "%")
         best_net.print_dsge_level()
@@ -68,7 +68,7 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
 
 
 def print_usage():
-    print("Usage: python main.py [dataset] [population_size] [num_generations] [batch_size]")
+    print("Usage: python main.py [dataset] [population_size] [num_generations] [batch_size] [subpath]")
     # add more info about which datasets are available
     sys.exit(1)
 
@@ -78,8 +78,8 @@ if __name__ == "__main__":
     args = len(sys.argv) 
 
     # provide them all, otherwise they are set to default
-    if args > 4: 
-        if not isinstance(sys.argv[1], str) or not sys.argv[2].isdigit() or not sys.argv[3].isdigit() or not sys.argv[4].isdigit():  
+    if args > 5: 
+        if not isinstance(sys.argv[1], str) or not sys.argv[2].isdigit() or not sys.argv[3].isdigit() or not sys.argv[4].isdigit() or not isinstance(sys.argv[5], str):  
             print_usage()
         else:
             # choose dataset
@@ -96,6 +96,8 @@ if __name__ == "__main__":
             num_generations = int(sys.argv[3])
             # set batch size
             batch_size = int(sys.argv[4])
+            # set subpath
+            subpath = str(sys.argv[5])
 
     # set default values
     else: 
@@ -103,13 +105,13 @@ if __name__ == "__main__":
         population_size = 2
         num_generations = 2
         batch_size = 4
-
+        subpath = ''
     
 
     # run evolution
-    print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size} \n\n")
-    run_evolution(dataset, population_size, num_generations, batch_size, subpath = 'prova')
+    print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
+    run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath)
 
-    #plot_results(population_size)
+    plot_results(population_size, subpath = subpath)
 
     

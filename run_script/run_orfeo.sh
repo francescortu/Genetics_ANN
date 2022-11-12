@@ -12,19 +12,20 @@ touch run_script/running_info
 # pop_size=100
 # gen_size=100
 # batch_size=4
-# PATH_TO_SAVE="results/${dataset}/pop${pop_size}_gen${gen_size}"
+# PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}"
 # mkdir -p $PATH_TO_SAVE
 
 # python main.py $dataset $pop_size $gen_size $batch_size
 
-dataset="cifar10"
-pop_size=100
-gen_size=100
-batch_size=4
-PATH_TO_SAVE="results/${dataset}/pop${pop_size}_gen${gen_size}"
-mkdir -p $PATH_TO_SAVE
+# dataset="cifar10"
+# pop_size=100
+# gen_size=100
+# batch_size=4
+# PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
+# mkdir -p "results/$PATH_TO_SAVE"
 
-python main.py $dataset $pop_size $gen_size $batch_size
+
+# python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE
 
 for i in {1..10}
 do
@@ -32,10 +33,11 @@ do
     pop_size=100
     gen_size=100
     batch_size=4
-    PATH_TO_SAVE="results/${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
-    mkdir -p $PATH_TO_SAVE
+    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
+    mkdir -p "results/$PATH_TO_SAVE"
+  
 
-    python main.py $dataset $pop_size $gen_size $batch_size
+    python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE
     echo "run ${dataset} ${i} finished" >> run_script/running_info
 done
 
@@ -45,10 +47,11 @@ do
     pop_size=100
     gen_size=100
     batch_size=4
-    PATH_TO_SAVE="results/${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
-    mkdir -p $PATH_TO_SAVE
+    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
+    mkdir -p "results/$PATH_TO_SAVE"
+ 
 
-    python main.py $dataset $pop_size $gen_size $batch_size
+    python main.py $dataset $pop_size $gen_size $batch_size  $PATH_TO_SAVE
 
     echo "run ${dataset} ${i} finished" >> run_script/running_info
 done
