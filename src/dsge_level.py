@@ -103,13 +103,6 @@ class Layer:
         if self.type == layer_type.POOLING:           
             pool_type = pool(np.random.randint(len(pool)))
 
-            """ if pool_type == pool.MAX:
-                if padding.value == "same":
-                    padding_value = utils.compute_padding_same_max_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
-            elif pool_type == pool.AVG:
-                if padding.value == "same":
-                    padding_value = utils.compute_padding_same_avg_pool2d(self.channels["in"], self.channels["out"], kernel_size, stride_size)
-             """
             # set parameters
             self.param = {"pool_type" : pool_type, 
                     "kernel_size": kernel_size, 
