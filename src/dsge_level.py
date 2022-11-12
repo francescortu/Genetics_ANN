@@ -52,6 +52,7 @@ class layer_type(Enum):
     CONV = 1
     ACTIVATION = 2
     LINEAR = 3
+    BATCH_NORM = 4
 
 class pool(Enum):
     "Pooling types for DSGE."
@@ -110,11 +111,19 @@ class Layer:
                     "padding": padding_value}
                           
         elif self.type == layer_type.CONV:         #randomly choose a kernel size, stride and padding
-            self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value}
+            prob_of_bias = 0.2
+            bias = False
+            if np.random.random() <= prob_of_bias:
+                bias = False
+            self.param = {'kernel_size': kernel_size, 'stride': stride_size, 'padding': padding.value, 'bias': bias}
         elif self.type == layer_type.ACTIVATION:   #randomly choose an activation type
             self.param = activation(np.random.randint(len(activation)-1))
         elif self.type == layer_type.LINEAR:     #linear layer has no parameters
             self.param = None
+        elif self.type == layer_type.BATCH_NORM:
+            self.param = None
+            #self.param = {'eps': ,'momentum': ,} we would have float parameters, would they work with mutation?!
+
     
     def init_form_encoding(self, type, param=None):
         self.type = type   #set the type
@@ -189,6 +198,7 @@ class Module:
         """
         #for later purpose init_max should be of lenght 3, each a entry for a type of module
         # num_expansions = np.random.randint(2,init_max[type])
+        prob_batch_norm = 0.2 # on average 20% of conv will be followed by batchnorm
         num_expansions = MAX_LEN_BLOCK_FEATURES
         layer_pheno = []
         #Initialise layers
@@ -206,9 +216,18 @@ class Module:
         
         for idx in range(num_expansions):
             tmp_cout = np.random.randint(MIN_CHANNEL_FEATURES, MAX_CHANNEL_FEATURES)
+            if layer_pheno[idx] == layer_type.CONV:
+                if np.random.random() <= prob_batch_norm:
+                    self.layers.append(Layer(layer_pheno[idx], c_out = tmp_cout))
+                    #apparently is always used after a conv
+                    self.layers.append(Layer(layer_type.BATCH_NORM,  c_out = tmp_cout))
+                    self.layers.append(Layer(layer_type.ACTIVATION,  c_out = tmp_cout))
+                else:
+                    self.layers.append(Layer(layer_pheno[idx], c_out = tmp_cout))
+                    self.layers.append(Layer(layer_type.ACTIVATION,  c_out = tmp_cout))
+            else:
+                self.layers.append(Layer(layer_pheno[idx], c_out = tmp_cout))
 
-            self.layers.append(Layer(layer_pheno[idx], c_out = tmp_cout))
-            self.layers.append(Layer(layer_type.ACTIVATION,  c_out = tmp_cout))
             #setting channels for next iter
             tmp_cin = tmp_cout
 
@@ -218,6 +237,8 @@ class Module:
             return layer_type.CONV
         elif l_name == 'pool-avg' or l_name == 'pool-max':
             return layer_type.POOLING
+        elif l_name == 'batch_norm':
+            return layer_type.BATCH_NORM
 
     def get_layers(self, phenotype):
         """

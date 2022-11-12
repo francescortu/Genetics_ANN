@@ -10,4 +10,5 @@ __pycache__/
 data/
 results.csv
 best_organism
+GA_for_param_optim/cifar_data/cifar-10-batches-py
 
