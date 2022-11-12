@@ -26,35 +26,42 @@ touch run_script/running_info
 
 
 # python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE
+if [ -z "$1" ] && [ -z "$2" ]
+then
+    start=1
+    end=10
+else
+    start=$1
+    end=$2
+fi
 
-for i in {1..10}
-do
+for (( i=$start; i<=$end; i++ ))
     dataset="MNIST"
-    pop_size=100
-    gen_size=100
+    pop_size=1
+    gen_size=1
     batch_size=4
     PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
     mkdir -p "results/$PATH_TO_SAVE"
   
 
     python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE
-    echo "run ${dataset} ${i} finished" >> run_script/running_info
+    echo "run ${dataset} ${i} finished" >> run_script/running_info_${start}_${end}
 done
 
-for i in {1..10}
-do
-    dataset="cifar10"
-    pop_size=100
-    gen_size=100
-    batch_size=4
-    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
-    mkdir -p "results/$PATH_TO_SAVE"
+# for (( i=$start; i<=$end; i++ ))
+# do
+#     dataset="cifar10"
+#     pop_size=100
+#     gen_size=100
+#     batch_size=4
+#     PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
+#     mkdir -p "results/$PATH_TO_SAVE"
  
 
-    python main.py $dataset $pop_size $gen_size $batch_size  $PATH_TO_SAVE
+#     python main.py $dataset $pop_size $gen_size $batch_size  $PATH_TO_SAVE
 
-    echo "run ${dataset} ${i} finished" >> run_script/running_info
-done
+#     echo "run ${dataset} ${i} finished" >> run_script/running_info_${start}_${end}
+# done
 
-rm run_script/running_info
+rm run_script/running_info_$1_$2
 exit
