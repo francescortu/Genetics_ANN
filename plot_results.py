@@ -11,7 +11,7 @@ def plot_individual_accuracy(x,y):
     plt.tick_params(axis='y', colors="white")
   
     plt.title(f"Accuracy for each individual in each generation", color = 'white')
-    plt.savefig(f'results/individual_accuracy.png', dpi=300, transparent=True)
+    plt.savefig(f'results/plot/individual_accuracy.png', dpi=300, transparent=True)
     plt.close()
 
 def plot_generation_accuracy(best_net_acc):
@@ -25,7 +25,7 @@ def plot_generation_accuracy(best_net_acc):
     plt.xticks(range(len(best_net_acc))) # show only integer values
 
     plt.title(f"Best fitness value obtained for each generation", color = 'white')
-    plt.savefig(f'results/generation_accuracy.png', dpi=300, transparent=True)
+    plt.savefig(f'results/plot/generation_accuracy.png', dpi=300, transparent=True)
     plt.close()
 
 
@@ -41,14 +41,14 @@ def plot_generation_netlen(best_net_len):
     plt.yticks(range(max(best_net_len)))
 
     plt.title(f"Number of layers obtained for each generation's best individual", color = 'white')
-    plt.savefig(f'results/generation_net_len.png', dpi=300, transparent=True)
+    plt.savefig(f'results/plot/generation_net_len.png', dpi=300, transparent=True)
     plt.close()
 
 def plot_results(population_size):
 
     # plot fitness for each individual in each generation
     # read data
-    with open('results/all_generations_data.csv', mode='r') as csv_file:
+    with open(f'results/all_generations_data.csv', mode='r') as csv_file:
         data = list(csv.reader(csv_file, delimiter = ','))
 
     n_row = len(data)
