@@ -22,3 +22,5 @@ Things yet to be done:
 [X] increase train set, decrease test set
 
 [] decide which parts to mantain and which ones to remove from grammar
+
+[] debug information file ga_level
