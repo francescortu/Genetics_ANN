@@ -12,12 +12,26 @@ import time
 
 from plot_results import plot_results
 
-def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4):
+def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4, subpath =''):
+    '''
+    input: 
+        - the dataset we want to train the population on
+        - population_size: how many individuals for each generation
+        - the number of generations we want to train
+        - the batch_size associated to trainloader and testloader
+        - subpath: the path where we want to save the results
+    '''
     # create a population of random networks
     curr_env = evolution(population_size, holdout=0.6, mating=True, dataset=dataset, batch_size=batch_size)
     
     # run evolution and write result on file
-    f = open(f'results/all_generations_data_{time.strftime("%Y%m%d-%H%M%S")}.csv', 'w+', newline='')
+    path = 'results/'
+    if subpath:
+        path += subpath 
+        if not os.path.isdir(path):
+            os.mkdir(path)
+     
+    f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
     # create the csv writer
     writer = csv.writer(f)
 
@@ -82,7 +96,7 @@ if __name__ == "__main__":
             num_generations = int(sys.argv[3])
             # set batch size
             batch_size = int(sys.argv[4])
-            
+
     # set default values
     else: 
         dataset = MNIST
@@ -94,7 +108,7 @@ if __name__ == "__main__":
 
     # run evolution
     print("\n\n Evolution of a population of networks: \n\n")
-    run_evolution(dataset, population_size, num_generations, batch_size)
+    run_evolution(dataset, population_size, num_generations, batch_size, subpath = 'prova')
 
     #plot_results(population_size)
 
