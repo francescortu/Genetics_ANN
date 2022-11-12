@@ -24,7 +24,8 @@ class evolution():
 
         self.population_size = population_size
         self.population = []
-   
+        self.scores = []
+
         for _ in range(self.population_size):
             num_feat = np.random.randint(1, MAX_LEN_FEATURES)
             num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
@@ -38,6 +39,10 @@ class evolution():
         
 
     def generation(self):
+        # statistics for each individual
+        generation = [{"individual": i, "score": self.scores[i], "len": self.population[i]._len()} for i in range(self.population_size)]
+
+        # create new population 
         new_population = [self.best_organism] # Ensure best organism survives
 
         for i in range(self.population_size - 1):
@@ -61,12 +66,14 @@ class evolution():
         
         self.population = new_population
 
+        return generation
+
     def get_best_organism(self):   
-        scores = [self.scoring_function(x) for x in self.population]
-        self.population = [self.population[x] for x in np.argsort(scores)[::-1]]
+        self.scores = [self.scoring_function(x) for x in self.population]
+        self.population = [self.population[x] for x in np.argsort(self.scores)[::-1]]
         
         self.best_organism = copy.deepcopy(self.population[0])
-        self.best_score = sorted(scores)[-1]
+        self.best_score = sorted(self.scores)[-1]
 
         return self.best_organism, self.best_score
 

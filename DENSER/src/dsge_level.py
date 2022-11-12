@@ -311,7 +311,7 @@ class Module:
         if (c_out is not None):
             for i in range(self.len()):
                 self.layers[i].fix_channels(c_out=c_out)
-            self.param['output_channels'] = c_out
+                self.param['output_channels'] = c_out
             
         if(c_in is not None):
             self.layers[0].fix_channels(c_in=c_in)
@@ -389,8 +389,7 @@ class Module:
     
 
 
-
-    ########################################
+########################################
     # Plot the neural network architecture
     ########################################
 
@@ -400,9 +399,13 @@ class Module:
         c_out = self.param['output_channels']
         kernel_size = self.layers[0].param['kernel_size']
 
+        text_color = 'white'
         colors = ['#ba5b83', '#bf5600']
+        edgecolors = ['#803655', '#8f4101']
         layer_type = self.layers[0].type
         color = colors[0] if layer_type == layer_type.CONV else colors[1]
+        edgecolor = edgecolors[0] if layer_type == layer_type.CONV else edgecolors[1]
+
         plotted = int(c_out/3) if c_out >= 3 else c_out
     
         for i in range(plotted):
@@ -412,7 +415,7 @@ class Module:
             y1 = -2.5+i*(-0.3)
             y2 = 2.5 - i*0.3
             y = [y1,y1,y2,y2]
-            trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor=color, edgecolor='#803655', linewidth=0.8)
+            trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor=color, edgecolor=edgecolor, linewidth=0.8)
             pyplot.gca().add_patch(trapezoid)
         
         
@@ -428,16 +431,16 @@ class Module:
             # get activation function type
             activation_layer_type = str(self.layers[1].param)[11:]
 
-            plt.text(x1, y1 - 6, f'Conv2d', fontsize=font_size, fontweight='bold',  color='black')
-            plt.text(x1, y1 - 12, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color='black')
+            plt.text(x1, y1 - 6, f'Conv2d', fontsize=font_size, fontweight='bold',  color=text_color)
+            plt.text(x1, y1 - 12, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color=text_color)
         elif layer_type == layer_type.POOLING:
-            plt.text(x1, y1 - 6, f'Pool2d ', fontsize=font_size, fontweight='bold',  color='black')
+            plt.text(x1, y1 - 6, f'Pool2d ', fontsize=font_size, fontweight='bold',  color=text_color)
         
         # add arrow to next module with activation type label if present
         plt.tick_params(axis='x', labelsize=10)
-        plt.text(x2+0.5, 5, f'{activation_layer_type}', fontsize=font_size, fontweight='bold',  color='black')
+        plt.text(x2+0.5, 5, f'{activation_layer_type}', fontsize=font_size, fontweight='bold',  color=text_color)
 
-        colors = ['#35b3b5', '#3562b5', '#35b575', '#474747']
+        colors = ['#35b3b5', '#3562b5', '#35b575', '#c4c3c2']#'#474747']
 
         if activation_layer_type:
             color = colors[self.layers[1].param.value]
@@ -461,11 +464,10 @@ class Module:
                 trapezoid = pyplot.Polygon(xy=list(zip(x,y)),  facecolor='#f2d585', edgecolor='#a88d3e', linewidth=1)
                 pyplot.gca().add_patch(trapezoid)
 
-            plt.text(x1-0.5, y1 - 7, 'Flatten\n layer', fontsize=font_size, fontweight='bold',  color='black')
+            plt.text(x1-2, y1 - 7, 'Flatten\n layer', fontsize=font_size, fontweight='bold',  color=text_color)
             next = x2 + 9
 
             self.add_label(0.5,x2, 'Feature extraction', font_size)
-
 
         #update the start position
         return next
@@ -537,16 +539,19 @@ class Module:
 
 
     def line_between_two_nodes(self, node1, node2):
-        line = pyplot.Line2D((node1['x'], node2['x']), (node1['y'], node2['y']), color='#333232', linewidth=0.5, zorder=-1)
+        connections_color = '#c4c3c2' #'#333232'  
+        line = pyplot.Line2D((node1['x'], node2['x']), (node1['y'], node2['y']), color=connections_color, linewidth=0.5, zorder=-1)
         pyplot.gca().add_line(line)
 
     def add_label(self, x1, x2, name, font_size):
+        text_color = 'white'
+        connections_color = '#c4c3c2' #'#333232'  
         y1 = -40
         y2 = y1 + 3
-        line = pyplot.Line2D((x1, x2), (y1, y1), color='#333232', linewidth=0.5)
-        line1 = pyplot.Line2D((x1, x1), (y1, y2), color='#333232', linewidth=0.5)
-        line2 = pyplot.Line2D((x2, x2), (y1, y2), color='#333232', linewidth=0.5)
+        line = pyplot.Line2D((x1, x2), (y1, y1), color=connections_color, linewidth=0.5)
+        line1 = pyplot.Line2D((x1, x1), (y1, y2), color=connections_color, linewidth=0.5)
+        line2 = pyplot.Line2D((x2, x2), (y1, y2), color=connections_color, linewidth=0.5)
         pyplot.gca().add_line(line)
         pyplot.gca().add_line(line1)
         pyplot.gca().add_line(line2)
-        plt.text(x1 + (x2 -x1)/3 - 1, y1 - 2, name,  fontweight='bold', fontsize=font_size,  color='black')
+        plt.text(x1 + (x2 -x1)/3 - 1, y1 - 2, name,  fontweight='bold', fontsize=font_size,  color=text_color)

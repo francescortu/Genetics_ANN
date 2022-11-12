@@ -238,13 +238,13 @@ class Net_encoding:
                 START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, length_c, node_in = node_input) 
 
         # add title
-        plt.title(f"Network representation, generation: {gen}")
+        plt.title(f"Network representation, generation: {gen}", color = 'white')
 
         # remove axis
         pyplot.axis('equal')
         plt.axis('off')
         # save image
-        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300)
+        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300, transparent=True)
         plt.close()
         #pyplot.show()
 
