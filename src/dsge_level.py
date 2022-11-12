@@ -122,8 +122,9 @@ class Layer:
             self.param = None
         elif self.type == layer_type.BATCH_NORM:
             self.param = None
-            #self.param = {'eps': ,'momentum': ,} we would have float parameters, would they work with mutation?!
-
+            eps = np.random.random()*10**(-5)
+            momentum = np.random.random()
+            self.param = {'eps': eps ,'momentum': momentum}
     
     def init_form_encoding(self, type, param=None):
         self.type = type   #set the type
