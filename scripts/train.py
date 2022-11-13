@@ -34,7 +34,8 @@ def train(model, trainloader, batch_size = 4, epochs = 1, all = False):
 
         dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
 
-        for i in tqdm(range(iterations), desc=f"training epoch:{epoch}"):
+        # for i in tqdm(range(iterations), desc=f"training epoch:{epoch}"):
+        for i in range(iterations):
             try:
                 inputs, labels = next(dataloader_iterator)
                 inputs, labels = inputs.to(device), labels.to(device)
@@ -90,7 +91,8 @@ def eval(model, testloader):
     total = 0
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
-        for data in tqdm(testloader, desc="evaluating"):
+        # for data in tqdm(testloader, desc="evaluating"):
+        for data in testloader:
             images, labels = data
             images, labels = images.to(device), labels.to(device)
             # calculate outputs by running images through the network

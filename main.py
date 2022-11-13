@@ -31,12 +31,6 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         if not os.path.isdir(path):
             os.mkdir(path)
      
-    f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
-    # create the csv writer
-    writer = csv.writer(f)
-
-    fieldnames = ['generation', 'individual', 'accuracy', 'num_layers', 'best_accuracy', 'best_num_layers']
-    writer.writerow(fieldnames)
     res = []
 
     generations = num_generations
@@ -60,6 +54,12 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         best_net.print_dsge_level()
         sys.stdout = original_stdout
 
+    f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
+    # create the csv writer
+    writer = csv.writer(f)
+
+    fieldnames = ['generation', 'individual', 'accuracy', 'num_layers', 'best_accuracy', 'best_num_layers']
+    writer.writerow(fieldnames)
     
     print("Best accuracy obtained: ", best_score)
     writer.writerows(res)
@@ -110,8 +110,8 @@ if __name__ == "__main__":
 
     # run evolution
     print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
+    print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
     run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath)
-
-    plot_results(population_size, subpath = subpath)
+    # plot_results(population_size, subpath = subpath)
 
     
