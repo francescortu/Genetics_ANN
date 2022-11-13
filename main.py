@@ -104,7 +104,6 @@ if __name__ == "__main__":
         num_generations = 2
         batch_size = 4
 
-    
 
     # run evolution
     print("\n\n Evolution of a population of networks: \n\n")
