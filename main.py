@@ -105,7 +105,8 @@ if __name__ == "__main__":
         population_size = 2
         num_generations = 2
         batch_size = 4
-
+        subpath = ''
+        
     # run evolution
     print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
     print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
