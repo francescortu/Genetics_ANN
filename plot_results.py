@@ -95,4 +95,4 @@ def create_random_gif():
 
         imageio.mimsave('images_net/nn_evolution.gif', frames, format='GIF', duration=1)
    
- """
+"""
