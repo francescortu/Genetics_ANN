@@ -3,7 +3,7 @@ import imageio
 from os import listdir
 import matplotlib.pyplot as plt
 
-def plot_individual_accuracy(x,y):
+def plot_individual_accuracy(x,y, path):
     plt.plot(x, y, 'bo')
     plt.xlabel('Individual', color = 'white')
     plt.ylabel('fitness (%)', color = 'white')
@@ -11,10 +11,10 @@ def plot_individual_accuracy(x,y):
     plt.tick_params(axis='y', colors="white")
   
     plt.title(f"Accuracy for each individual in each generation", color = 'white')
-    plt.savefig(f'results/plot/individual_accuracy.png', dpi=300, transparent=True)
+    plt.savefig(f'{path}/individual_accuracy.png', dpi=300, transparent=True)
     plt.close()
 
-def plot_generation_accuracy(best_net_acc):
+def plot_generation_accuracy(best_net_acc, path):
     x = [i for i in range(len(best_net_acc))]
     plt.plot(x, best_net_acc)
 
@@ -25,11 +25,11 @@ def plot_generation_accuracy(best_net_acc):
     plt.xticks(range(len(best_net_acc))) # show only integer values
 
     plt.title(f"Best fitness value obtained for each generation", color = 'white')
-    plt.savefig(f'results/plot/generation_accuracy.png', dpi=300, transparent=True)
+    plt.savefig(f'{path}/generation_accuracy.png', dpi=300, transparent=True)
     plt.close()
 
 
-def plot_generation_netlen(best_net_len):
+def plot_generation_netlen(best_net_len, path):
     x = [i for i in range(len(best_net_len))]
     plt.plot(x, best_net_len)
 
@@ -41,14 +41,18 @@ def plot_generation_netlen(best_net_len):
     plt.yticks(range(max(best_net_len)))
 
     plt.title(f"Number of layers obtained for each generation's best individual", color = 'white')
-    plt.savefig(f'results/plot/generation_net_len.png', dpi=300, transparent=True)
+    plt.savefig(f'{path}/generation_net_len.png', dpi=300, transparent=True)
     plt.close()
 
-def plot_results(population_size):
+def plot_results(population_size, subpath=''):
 
     # plot fitness for each individual in each generation
     # read data
-    with open(f'results/all_generations_data.csv', mode='r') as csv_file:
+    path = 'results/'
+    if subpath:
+        path += subpath 
+
+    with open(f'{path}/all_generations_data.csv', mode='r') as csv_file:
         data = list(csv.reader(csv_file, delimiter = ','))
 
     n_row = len(data)
@@ -67,11 +71,11 @@ def plot_results(population_size):
             best_net_acc.append(float(data[i][4]))
             best_net_len.append(int(data[i][5]))
 
-    plot_individual_accuracy(x,y)
+    plot_individual_accuracy(x,y, path)
     
-    plot_generation_accuracy(best_net_acc)
+    plot_generation_accuracy(best_net_acc, path)
 
-    plot_generation_netlen(best_net_len)
+    plot_generation_netlen(best_net_len, path)
 
 
 """ 
