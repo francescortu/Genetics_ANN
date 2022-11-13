@@ -83,9 +83,7 @@ class evolution():
 
     def scoring_function(self, modelcode):
         model = Net(modelcode)
-        accuracy = 0
-        if test_model(model, self.trainloader): # if model is properly working
-            model = self.training_function(model)
-            accuracy = eval(model, self.testloader)
+        model = self.training_function(model)
+        accuracy = eval(model, self.testloader)
         
         return accuracy
