@@ -4,6 +4,10 @@ from src.mutations import *
 class Net(nn.Module):
     def __init__(self, Net_encod):
         super().__init__()
+
+        # verify the input shape and if net is not working update the encoding
+        Net_encod.update_encoding()
+
         Net_encod.setting_channels()
         self.layer_list = []
 
@@ -31,26 +35,30 @@ class Net(nn.Module):
         
 
     def make_layer(self, dsge_encod):
-        if dsge_encod.type == layer_type.CONV:
-            return nn.Conv2d(dsge_encod.channels['in'], dsge_encod.channels['out'], dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
-        if dsge_encod.type == layer_type.LINEAR:
-                return nn.Linear(dsge_encod.channels['in'], dsge_encod.channels['out'])
-        if dsge_encod.type == layer_type.ACTIVATION:
-            if dsge_encod.param == activation.RELU:
-                return nn.ReLU()
-            if dsge_encod.param == activation.SIGMOID:
-                return nn.Sigmoid()
-            if dsge_encod.param == activation.SOFTMAX:
-                return nn.Softmax()
-        if dsge_encod.type == layer_type.POOLING:
-            if dsge_encod.param["pool_type"] == pool.MAX:
-                return nn.MaxPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
-            elif dsge_encod.param["pool_type"] == pool.ADP_MAX:
-                return nn.AdaptiveMaxPool2d(self.current_input_shape)
-            elif dsge_encod.param["pool_type"] == pool.AVG:
-                return nn.AvgPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
-            elif dsge_encod.param["pool_type"] == pool.ADP_AVG:
-                return nn.AdaptiveAvgPool2d(self.current_input_shape)
+            if dsge_encod.type == layer_type.CONV:
+                return nn.Conv2d(dsge_encod.channels['in'], dsge_encod.channels['out'], dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'], bias = dsge_encod.param['bias'])
+            if dsge_encod.type == layer_type.LINEAR:
+                    return nn.Linear(dsge_encod.channels['in'], dsge_encod.channels['out'])
+            if dsge_encod.type == layer_type.ACTIVATION:
+                if dsge_encod.param == activation.RELU:
+                    return nn.ReLU()
+                if dsge_encod.param == activation.SIGMOID:
+                    return nn.Sigmoid()
+                if dsge_encod.param == activation.TANH:
+                    return nn.Tanh()
+                if dsge_encod.param == activation.SOFTMAX:
+                    return nn.Softmax()
+            if dsge_encod.type == layer_type.POOLING:
+                if dsge_encod.param["pool_type"] == pool.MAX:
+                    return nn.MaxPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
+                elif dsge_encod.param["pool_type"] == pool.ADP_MAX:
+                    return nn.AdaptiveMaxPool2d(self.current_input_shape)
+                elif dsge_encod.param["pool_type"] == pool.AVG:
+                    return nn.AvgPool2d(dsge_encod.param['kernel_size'], dsge_encod.param['stride'], dsge_encod.param['padding'])
+                elif dsge_encod.param["pool_type"] == pool.ADP_AVG:
+                    return nn.AdaptiveAvgPool2d(self.current_input_shape)
+            if dsge_encod.type == layer_type.BATCH_NORM:
+                    return nn.BatchNorm2d(dsge_encod.channels['in'])
 
     def forward(self, x):
         out = self.layers(x)

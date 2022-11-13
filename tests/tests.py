@@ -111,7 +111,7 @@ def test_evolution(trainloader):
         assert(test_model(Net(encoding),trainloader)) == True, bcolors.RED + "Should be True if new netowrk is valid" + bcolors.ENDC
 
     # test evolution
-    generations = 5
+    generations = 3
     new_population = []
 
     print(bcolors.HEADER + "\nTesting the combination of crossover, mutation at GA and dsge level in evolution of population\n" + bcolors.ENDC)

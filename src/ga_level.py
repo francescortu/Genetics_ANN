@@ -92,6 +92,29 @@ class Net_encoding:
             self.GA_encoding(i).param['output_channels'] = self.GA_encoding(i).layers[-1].channels['out']
         
         self.fix_first_classification()
+    
+    def update_encoding(self):
+        current_input_shape = self.input_shape
+        # check features layers
+        for i in range(self.len_features()):
+            invalid = 0
+            for j in range(self.GA_encoding(i).len()):
+                layer = self.GA_encoding(i).layers[j]
+                if layer.type == layer_type.CONV or layer.type == layer_type.POOLING:
+                    new_shape = layer.compute_shape(current_input_shape)
+
+                    if new_shape > layer.param["kernel_size"]: 
+                        current_input_shape = new_shape
+                    # if the kernel size is bigger than input shape, the shape is too small and the layer must be removed
+                    else:
+                        invalid = 1
+
+            if invalid:
+                self.features.pop(i)
+
+      
+                
+
 
     def get_input_shape(self):
         return self.input_shape

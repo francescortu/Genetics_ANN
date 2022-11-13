@@ -69,9 +69,6 @@ def GA_add(offspring, cut, module):
         offspring.features[cut] = copy.deepcopy(module)
         offspring.features.extend(tmp) # add the rest of the modules
 
-
-     
-
     elif module.M_type == module_types.CLASSIFICATION:
         tmp = copy.deepcopy( offspring.classification[cut - offspring.len_features():]  )
         offspring.classification = copy.deepcopy(offspring.classification[:cut - offspring.len_features() + 1])
@@ -79,7 +76,7 @@ def GA_add(offspring, cut, module):
         # add the module
         offspring.classification[cut- offspring.len_features()] = copy.deepcopy(module)
         offspring.classification.extend(tmp) # add the rest of the modules
-        #fix channels before and after the cut        
+             
 
   
 
@@ -135,8 +132,6 @@ def GA_remove(offspring):
             #remove the module
             offspring.features.pop(cut)
 
-
-
         elif cut_type == module_types.CLASSIFICATION:
             #remove the module
             offspring.classification.pop(cut - offspring.len_features())
@@ -163,7 +158,6 @@ In DENSER we have three types of mutation at the dsge level:
 class dsge_mutation_type(Enum):
     GRAMMATICAL = 0
     INTEGER = 1
-    #FLOAT = 2
 
 def dsge_mutation(offspring, type = None):
     "Mutation of the DSGE encoding."
@@ -174,9 +168,6 @@ def dsge_mutation(offspring, type = None):
         grammatical_mutation(offspring)
     elif type == dsge_mutation_type.INTEGER:
         integer_mutation(offspring)
-
-    #elif mutation == mutation_type.FLOAT:
-        #float_mutation(offspring)
 
  
 
