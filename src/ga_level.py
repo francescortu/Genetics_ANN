@@ -96,24 +96,29 @@ class Net_encoding:
     def update_encoding(self):
         current_input_shape = self.input_shape
         # check features layers
-        for i in range(self.len_features()):
-            invalid = 0
+        # self.print_dsge_level()
+        i = 0
+        while i < self.len_features():
+            invalid = False
             for j in range(self.GA_encoding(i).len()):
       
 
-                if layer.type == layer_type.CONV or layer.type == layer_type.POOLING:
+                if self.GA_encoding(i).layers[j].type == layer_type.CONV or self.GA_encoding(i).layers[j].type == layer_type.POOLING:
                     new_shape = self.GA_encoding(i).layers[j].compute_shape(current_input_shape)
-
                     if current_input_shape > self.GA_encoding(i).layers[j].param["kernel_size"] and new_shape > 0: 
                         current_input_shape = new_shape
                     # if the kernel size is bigger than input shape, the shape is too small and the layer must be removed
                     else:
-                        invalid = 1
+                        invalid = True
 
             if invalid:
-                self.features.pop(i)
+                l_list = copy.deepcopy(self.features)
+                del l_list[i]
+                self.features = copy.deepcopy(l_list)
+            else:
+                i += 1
 
-      
+
                 
 
 
