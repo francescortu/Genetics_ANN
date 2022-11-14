@@ -40,11 +40,11 @@ touch run_script/running_info_${start}_${end}
 for (( i=$start; i<=$end; i++ ))
 do
     dataset="MNIST"
-    pop_size=100
-    gen_size=100
+    pop_size=50
+    gen_size=50
     batch_size=4
 
-    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run${i}"
+    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run2"
     mkdir -p "results/$PATH_TO_SAVE"
   
     python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE

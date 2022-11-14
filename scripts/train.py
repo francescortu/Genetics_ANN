@@ -21,7 +21,7 @@ def train(model, trainloader, batch_size = 4, epochs = 1, all = False):
         inspected = len(trainloader.dataset)
         epochs = 2
     else:
-        inspected = len(trainloader.dataset) / 5  # the number of items to be used for training before printing the loss
+        inspected = len(trainloader.dataset) / 10  # the number of items to be used for training before printing the loss
 
     iterations = int(inspected / batch_size)
     
