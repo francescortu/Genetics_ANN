@@ -349,8 +349,8 @@ class Module:
         activation_layer_type = ''
         #layer_type = str(self.layers[0].type)
         if layer_type == layer_type.CONV:
-            # get activation function type
-            activation_layer_type = str(self.layers[1].param)[11:]
+            # get activation function type (features block if conv have layers: conv, batch_norm, activation)
+            activation_layer_type = str(self.layers[len(self.layers)-1].param)[11:]
 
             plt.text(x1, y1 - 6, f'Conv2d', fontsize=font_size, fontweight='bold',  color=text_color)
             plt.text(x1, y1 - 12, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color=text_color)
@@ -364,7 +364,7 @@ class Module:
         colors = ['#35b3b5', '#3562b5', '#35b575', '#c4c3c2']#'#474747']
 
         if activation_layer_type:
-            color = colors[self.layers[1].param.value]
+            color = colors[self.layers[len(self.layers)-1].param.value]
         else:
             color = colors[3]
         
