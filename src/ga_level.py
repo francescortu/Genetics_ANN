@@ -103,7 +103,7 @@ class Net_encoding:
                 if layer.type == layer_type.CONV or layer.type == layer_type.POOLING:
                     new_shape = layer.compute_shape(current_input_shape)
 
-                    if new_shape > layer.param["kernel_size"]: 
+                    if new_shape > layer.param["kernel_size"] and new_shape > 0: 
                         current_input_shape = new_shape
                     # if the kernel size is bigger than input shape, the shape is too small and the layer must be removed
                     else:
