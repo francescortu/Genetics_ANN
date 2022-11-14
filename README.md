@@ -3,7 +3,7 @@
 This repository contains an implementation of the DENSER approach for automatic selection of a Convoluational Neural Network (CNN) architecture. The approach is described in the paper: [DENSER: Automatic Selection of Convolutional Neural Network Architectures](https://arxiv.org/abs/1904.08900).
 
 ## DENSER
-The DENSER approach is based on the idea of using a grammatic to describe the architecture of a CNN. The grammatic is used to generate a population of CNN architectures. The population is then evaluated using a fitness function. The fitness function is based on the accuracy of the CNN on a validation set. The best performing CNN is then used to generate a new population. This process is repeated until a CNN is found that meets the desired accuracy on the validation set.
+The DENSER approach is based on the idea of using a grammar to describe the architecture of a CNN. The grammar is used to dynamically generate a population of CNN architectures. Each individual of the population is then evaluated using a fitness function. The fitness function is based on the accuracy of the CNN on a validation set. The obtained CNNs are then used to generate a new population; through the use of genetic operators like crossovers and mutations new individuals are created from the previous ones. This process is repeated until a CNN is found that meets the desired accuracy on the validation set.
 
 ### Grammatic
 
@@ -21,7 +21,11 @@ The programm will print onf best_organisms the best performing CNNs found during
 ├── main.py
 ├── main_test.py
 ├── README.md
-├── results.csv
+|
+├── results
+|   ├── plots
+|   └── all_generations_data.csv
+|   
 ├── scripts
 │   ├── dataloader.py
 │   ├── train.py
@@ -39,8 +43,4 @@ The programm will print onf best_organisms the best performing CNNs found during
 │   └── tests.py
 └── todo.txt
 ``` 
-
-## TO DO
-
-[] decide which parts to mantain and which ones to remove from grammar
 
