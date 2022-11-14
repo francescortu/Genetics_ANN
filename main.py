@@ -2,15 +2,13 @@ from src.nn_encoding import *
 from scripts.train import train, eval
 from scripts.dataloader import MNIST, cifar10
 from src.evolution import evolution
-from torchsummary import summary
 
 import csv
 import sys
-import imageio
 from os import listdir
 import time
 
-from plot_results import plot_results
+from plot_results import *
 
 def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4, subpath =''):
     '''
@@ -113,4 +111,3 @@ if __name__ == "__main__":
     run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath)
     # plot_results(population_size, subpath = subpath)
 
-    

@@ -152,6 +152,10 @@ class Net_encoding:
         
         length_f = self.len_features()
         length_c = self.len_classification()
+
+        # initial background
+        plt.figure(facecolor='black')
+
         for i in range(self._len()):
             if self.GA_encoding(i).M_type == module_types.FEATURES:
                 is_last = False
@@ -166,14 +170,17 @@ class Net_encoding:
             else:
                 START, node_input = self.GA_encoding(i).draw_classification(START, length_c, length_f, length_c, node_in = node_input) 
 
+
         # add title
         plt.title(f"Network representation, generation: {gen}", color = 'white')
 
         # remove axis
         pyplot.axis('equal')
         plt.axis('off')
+        # change background color
+
         # save image
-        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300, transparent=True)
+        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300)#  transparent=True
         plt.close()
         #pyplot.show()
 
