@@ -3,7 +3,6 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch
 import torch.optim as optim
-from torchsummary import summary
 
 DEBUG = 0
 

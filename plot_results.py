@@ -3,6 +3,9 @@ import imageio
 from os import listdir
 import matplotlib.pyplot as plt
 
+from src.nn_encoding import Net_encoding
+import numpy as np
+
 def plot_individual_accuracy(x,y, path):
     plt.plot(x, y, 'bo')
     plt.xlabel('Individual', color = 'white')
@@ -78,10 +81,10 @@ def plot_results(population_size, subpath=''):
     plot_generation_netlen(best_net_len, path)
 
 
-""" 
+
 def generate_random_net():
-    num_feat = np.random.randint(1, MAX_LEN_FEATURES)
-    num_class = np.random.randint(1, MAX_LEN_CLASSIFICATION)
+    num_feat = np.random.randint(1, 10)
+    num_class = np.random.randint(1, 2)
     return Net_encoding(num_feat, num_class, 1, 10,28)
 
 def create_random_gif():
@@ -99,4 +102,3 @@ def create_random_gif():
 
         imageio.mimsave('images_net/nn_evolution.gif', frames, format='GIF', duration=1)
    
-"""
