@@ -16,7 +16,7 @@ def cifar10(batch_size=4, test = False):
     if test:
          testset = torchvision.datasets.CIFAR10(root='./data', train=False,  download=True, transform=transform)
     else:
-        trainset, testset = torch.utils.data.random_split(trainset, [50000, 10000])
+        trainset, testset = torch.utils.data.random_split(trainset, [40000, 10000])
 
     batch_size = batch_size
 
@@ -43,7 +43,7 @@ def MNIST(batch_size=4, test = False):
 
     # We download the train and the test dataset in the given root and applying the given transforms
     trainset = torchvision.datasets.MNIST(root='./data', train=True,  download=True, transform=transform)
-    
+
     if test:
          testset = torchvision.datasets.MNIST(root='./data', train=False,  download=True, transform=transform)
     else:
