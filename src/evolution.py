@@ -40,7 +40,7 @@ class evolution():
 
     def generation(self):
         # statistics for each individual
-        generation = [{"individual": i, "score": self.scores[i], "len": self.population[i]._len()} for i in range(self.population_size)]
+        generation = [{"individual": i, "score": self.scores[i], "len": self.population[i]._len(), "genotype": self.population[i]} for i in range(self.population_size)]
 
         # create new population 
         new_population = [self.best_organism] # Ensure best organism survives
