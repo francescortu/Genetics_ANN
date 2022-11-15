@@ -44,7 +44,7 @@ do
     gen_size=50
     batch_size=4
 
-    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run2"
+    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run3"
     mkdir -p "results/$PATH_TO_SAVE"
   
     python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE
