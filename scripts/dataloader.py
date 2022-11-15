@@ -5,14 +5,18 @@ import torchvision.transforms as transforms
 import os
 
 
-def cifar10(batch_size=4):
+def cifar10(batch_size=4, test = False):
     transform = transforms.Compose([
                         transforms.ToTensor(),
                 transforms.Normalize((0.1307,), (0.3081,)), ])
 
     # We download the train and the test dataset in the given root and applying the given transforms
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True,  download=True, transform=transform)
-    testset = torchvision.datasets.CIFAR10(root='./data', train=False,  download=True, transform=transform)
+
+    if test:
+         testset = torchvision.datasets.CIFAR10(root='./data', train=False,  download=True, transform=transform)
+    else:
+        trainset, testset = torch.utils.data.random_split(trainset, [50000, 10000])
 
     batch_size = batch_size
 
@@ -29,17 +33,21 @@ def cifar10(batch_size=4):
     #input_channels = 3
     input_channels = 3
 
-    return trainloader, testloader, input_size, n_classes, input_channels
+    return trainset, testset, input_size, n_classes, input_channels
 
 
-def MNIST(batch_size=4):
+def MNIST(batch_size=4, test = False):
     transform = transforms.Compose([
                         transforms.ToTensor(),
                 transforms.Normalize((0.1307,), (0.3081,)), ])
 
     # We download the train and the test dataset in the given root and applying the given transforms
     trainset = torchvision.datasets.MNIST(root='./data', train=True,  download=True, transform=transform)
-    testset = torchvision.datasets.MNIST(root='./data', train=False,  download=True, transform=transform)
+    
+    if test:
+         testset = torchvision.datasets.MNIST(root='./data', train=False,  download=True, transform=transform)
+    else:
+         trainset, testset = torch.utils.data.random_split(trainset, [50000, 10000])
 
     batch_size = batch_size
 
@@ -57,4 +65,4 @@ def MNIST(batch_size=4):
     input_channels = 1
 
 
-    return trainloader, testloader, input_size, n_classes, input_channels
+    return trainset, testset, input_size, n_classes, input_channels

@@ -1,0 +1,71 @@
+Best organism accuracy:  99 %
+######## len: 10 ##########
+
+ module: 0
+module_types.FEATURES
+(<layer_type.POOLING: 0>, {'pool_type': <pool.ADP_MAX: 1>, 'kernel_size': 5, 'stride': 2, 'padding': 0}, {'in': 1, 'out': 1})
+param:  {'input_channels': 1, 'output_channels': 1}
+output shape 28
+
+ module: 1
+module_types.FEATURES
+(<layer_type.POOLING: 0>, {'pool_type': <pool.ADP_MAX: 1>, 'kernel_size': 5, 'stride': 2, 'padding': 0}, {'in': 1, 'out': 1})
+param:  {'input_channels': 1, 'output_channels': 1}
+output shape 28
+
+ module: 2
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 1, 'out': 40})
+(<layer_type.BATCH_NORM: 4>, {'eps': 1.3314710619268245e-06, 'momentum': 0.2719891017605911}, {'in': 40, 'out': 40})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 40, 'out': 40})
+param:  {'input_channels': 1, 'output_channels': 40}
+output shape 28
+
+ module: 3
+module_types.FEATURES
+(<layer_type.POOLING: 0>, {'pool_type': <pool.ADP_AVG: 3>, 'kernel_size': 3, 'stride': 2, 'padding': 0}, {'in': 40, 'out': 40})
+param:  {'input_channels': 40, 'output_channels': 40}
+output shape 28
+
+ module: 4
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 2, 'padding': 'valid', 'bias': False}, {'in': 40, 'out': 25})
+(<layer_type.BATCH_NORM: 4>, {'eps': 5.213774795716807e-06, 'momentum': 0.4274609770610729}, {'in': 25, 'out': 25})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 25, 'out': 25})
+param:  {'input_channels': 40, 'output_channels': 25}
+output shape 12
+
+ module: 5
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 25, 'out': 40})
+(<layer_type.BATCH_NORM: 4>, {'eps': 1.3314710619268245e-06, 'momentum': 0.2719891017605911}, {'in': 40, 'out': 40})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 40, 'out': 40})
+param:  {'input_channels': 25, 'output_channels': 40}
+output shape 12
+
+ module: 6
+module_types.FEATURES
+(<layer_type.POOLING: 0>, {'pool_type': <pool.MAX: 0>, 'kernel_size': 3, 'stride': 1, 'padding': 0}, {'in': 40, 'out': 40})
+param:  {'input_channels': 40, 'output_channels': 40}
+output shape 10
+
+ module: 7
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 40, 'out': 40})
+(<layer_type.BATCH_NORM: 4>, {'eps': 1.3314710619268245e-06, 'momentum': 0.2719891017605911}, {'in': 40, 'out': 40})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 40, 'out': 40})
+param:  {'input_channels': 40, 'output_channels': 40}
+output shape 10
+
+ module: 8
+module_types.CLASSIFICATION
+(<layer_type.LINEAR: 3>, None, {'in': 4000, 'out': 683})
+(<layer_type.ACTIVATION: 2>, <activation.SIGMOID: 1>, {'in': 683, 'out': 683})
+param:  {'input_channels': 4000, 'output_channels': 683}
+
+ module: 9
+module_types.LAST_LAYER
+(<layer_type.LINEAR: 3>, None, {'in': 683, 'out': 10})
+(<layer_type.ACTIVATION: 2>, <activation.SOFTMAX: 2>, {'in': 10, 'out': 10})
+param:  {'input_channels': 683, 'output_channels': 10}
+######################################
