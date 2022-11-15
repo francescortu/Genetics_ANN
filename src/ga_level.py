@@ -110,10 +110,7 @@ class Net_encoding:
                         invalid = True
 
             if invalid:
-                l_list = copy.deepcopy(self.features)
-                del l_list[i]
-                self.features = copy.deepcopy(l_list)
-                # self.features.pop(i)
+                self.features.pop(i)
             else:
                 i += 1
 
