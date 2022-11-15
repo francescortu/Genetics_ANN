@@ -181,11 +181,12 @@ def grammatical_mutation(offspring):
     gene_type = offspring.GA_encoding(gene).M_type
     
     print("grammatical mutation", gene_type)
+
     if gene_type == module_types.FEATURES:
         #choose a layer inside the gene
         layer = np.random.randint(0, offspring.features[gene].len())
         #identify the layer
-        type = offspring.features[gene].layers[layer].type
+        type = offspring.features[gene].layers[layer].type # this if you want to let unchanged the type of the layer
         #build a new layer mantaining the same type and the number of channels
         new_layer = Layer(type,  c_out = offspring.features[gene].layers[layer].channels['out'])  
         # add the new layer
@@ -226,11 +227,10 @@ def integer_mutation(offspring):
     #identify the gene
     gene_type = offspring.GA_encoding(gene).M_type
     
-    print("integer mutation", gene_type)
-
     #change expansion rules within the gene by creating a new module
     new_module = Module(gene_type, c_out = offspring.GA_encoding(gene).param['output_channels'])
 
+    print("integer mutation", gene_type)
     #replace new gene
     if gene_type == module_types.FEATURES:
         offspring.features[gene] = new_module
