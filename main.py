@@ -56,6 +56,11 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         best_net.print_dsge_level()
         sys.stdout = original_stdout
 
+    # save best organism object in specific subfolder
+    net_obj_py = open(f"{path}/best_organism.pkl", "wb")
+    pickle.dump(Net(best_net), net_obj_py)
+    net_obj_py.close()
+
     # save results to file
     f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
     # create the csv writer
@@ -112,9 +117,16 @@ if __name__ == "__main__":
     
     
     # run evolution
-    print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
+    """  print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
     print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
     run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath) 
-    
+     """
     #read_results(population_size, subpath = subpath)
 
+    # check best network saved
+    filename = f"results/{subpath}/best_organism.pkl"
+    with open(filename, 'rb') as f:
+        net = pickle.load(f)
+        trainloader , testloader, _, _, _ = dataset(batch_size)
+        model = train(net, trainloader , batch_size, all=False)
+        eval(model, testloader)
