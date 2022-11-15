@@ -198,7 +198,6 @@ class cross_type(Enum):
 
 def GA_crossover(parent1, parent2, type = None):
     "randomly choose the crossover type"
-    type = cross_type.ONE_POINT
     if type == None:
         type = np.random.choice(list(cross_type))
     if type == cross_type.ONE_POINT:
@@ -216,7 +215,7 @@ def GA_bit_mask(parent1, parent2):
     mask1 = mask
     mask2 = 1 - mask1
     p = [parent1, parent2]
-    
+
     child1 = Net_encoding(p[mask1[0]].len_features(), p[mask1[1]].len_classification(), p[mask1[0]].param['input_channels'], p[mask1[2]].param['output_channels'], p[mask1[0]].input_shape)
     child2 = Net_encoding(p[mask2[0]].len_features(), p[mask2[1]].len_classification(), p[mask2[0]].param['input_channels'], p[mask2[2]].param['output_channels'], p[mask2[0]].input_shape)
     # copy features
@@ -225,12 +224,10 @@ def GA_bit_mask(parent1, parent2):
     # copy classification
     child1.classification = copy.deepcopy(p[mask1[1]].classification)
     child2.classification = copy.deepcopy(p[mask2[1]].classification)
-        # copy last layer
+    # copy last layer
     child1.last_layer = copy.deepcopy(p[mask1[2]].last_layer)
     child2.last_layer = copy.deepcopy(p[mask2[2]].last_layer)
-    
-    # fix channels
-   
+       
     
     return child1, child2
         
