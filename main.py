@@ -39,12 +39,16 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         print("Generation ", i , "'s best network accuracy: ", best_score, "%")
         for j in range(population_size):
             res.append([i, j, gen[j]['score'], gen[j]['len'], best_score, best_net._len()])
+            # save encoding of best network for each generation
+            net_obj_py = open(f"results/best_net_encoding_res/gen{i:003}.pkl", "wb")
+            pickle.dump(gen[j]['genotype'], net_obj_py)
+            net_obj_py.close()
 
     # test last generation best organism
     trainloader , testloader, _, _, _ = dataset(batch_size)
     model = train(Net(best_net), trainloader , batch_size, all=True)
     acc = eval(model, testloader)
-
+    
     original_stdout = sys.stdout # Save a reference to the original standard output
     with open(f'{path}/best_organism', 'w+') as d:
         sys.stdout = d
@@ -52,6 +56,7 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         best_net.print_dsge_level()
         sys.stdout = original_stdout
 
+    # save results to file
     f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
     # create the csv writer
     writer = csv.writer(f)
@@ -104,10 +109,12 @@ if __name__ == "__main__":
         num_generations = 2
         batch_size = 4
         subpath = ''
-        
+    
+    
     # run evolution
     print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
     print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
-    run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath)
-    # plot_results(population_size, subpath = subpath)
+    run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath) 
+    
+    #read_results(population_size, subpath = subpath)
 
