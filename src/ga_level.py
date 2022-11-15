@@ -101,8 +101,6 @@ class Net_encoding:
         while i < self.len_features():
             invalid = False
             for j in range(self.GA_encoding(i).len()):
-      
-
                 if self.GA_encoding(i).layers[j].type == layer_type.CONV or self.GA_encoding(i).layers[j].type == layer_type.POOLING:
                     new_shape = self.GA_encoding(i).layers[j].compute_shape(current_input_shape)
                     if current_input_shape > self.GA_encoding(i).layers[j].param["kernel_size"] and new_shape > 0: 
@@ -112,9 +110,7 @@ class Net_encoding:
                         invalid = True
 
             if invalid:
-                l_list = copy.deepcopy(self.features)
-                del l_list[i]
-                self.features = copy.deepcopy(l_list)
+                self.features.pop(i)
             else:
                 i += 1
 
@@ -186,7 +182,7 @@ class Net_encoding:
         # change background color
 
         # save image
-        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300)#  transparent=True
+        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300, transparent=True)
         plt.close()
         #pyplot.show()
 

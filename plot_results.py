@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 from src.nn_encoding import Net_encoding
 import numpy as np
+import pickle
 
 def plot_individual_accuracy(x,y, path):
     plt.plot(x, y, 'bo')
@@ -47,17 +48,14 @@ def plot_generation_netlen(best_net_len, path):
     plt.savefig(f'{path}/generation_net_len.png', dpi=300, transparent=True)
     plt.close()
 
-def plot_results(population_size, subpath=''):
 
-    # plot fitness for each individual in each generation
-    # read data
-    path = 'results/'
-    if subpath:
-        path += subpath 
-
-    with open(f'{path}/all_generations_data.csv', mode='r') as csv_file:
-        data = list(csv.reader(csv_file, delimiter = ','))
-
+'''
+this function is used to plot the results of the evolution
+- the accuracy of each individual in each generation
+- the best accuracy obtained in each generation
+- the number of layers of the best individual in each generation
+'''
+def plot_results(population_size, data, path):
     n_row = len(data)
     x = []
     y = []
@@ -71,8 +69,8 @@ def plot_results(population_size, subpath=''):
         # y is the accuracy of each individual
         y.append(float(data[i][2]))
         if i % population_size == 0:
-            best_net_acc.append(float(data[i][4]))
-            best_net_len.append(int(data[i][5]))
+            best_net_acc.append(float(data[i][5]))
+            best_net_len.append(int(data[i][6]))
 
     plot_individual_accuracy(x,y, path)
     
@@ -81,24 +79,44 @@ def plot_results(population_size, subpath=''):
     plot_generation_netlen(best_net_len, path)
 
 
+'''
+this function reads all the data saved in file of results
+'''
+def read_results(population_size, subpath=''):
 
-def generate_random_net():
-    num_feat = np.random.randint(1, 10)
-    num_class = np.random.randint(1, 2)
-    return Net_encoding(num_feat, num_class, 1, 10,28)
+    # plot fitness for each individual in each generation
+    # read data
+    path = 'results/'
+    if subpath:
+        path += subpath 
 
-def create_random_gif():
-    for i in range(8):
-        enc = generate_random_net()
-        enc.draw(i)
+    with open(f'{path}/all_generations_data.csv', mode='r') as csv_file:
+        data = list(csv.reader(csv_file, delimiter = ','))
+    
+    # plot results 
+    #plot_results(population_size, data, path)
+
+       
+def create_random_gif(subpath):
+    path = 'results/'
+    if subpath:
+        path += subpath
+    # take network encoding from file of results
+    for filename in listdir(f"{path}/best_net_encoding_res"):
+        if filename.endswith('.pkl'):
+            with open(f'{path}/best_net_encoding_res/{filename}', 'rb') as f:
+                net_encoding = pickle.load(f)
+                gen_num = int(filename[-7:-4])
+                print(gen_num)
+                net_encoding.draw(gen_num)
 
     # Build GIF
-    frames = []
+    """ frames = []
 
     for filename in listdir('images_net'):
         if filename.endswith('.png'):
             image = imageio.imread('images_net/'+filename)
             frames.append(image)
 
-        imageio.mimsave('images_net/nn_evolution.gif', frames, format='GIF', duration=1)
+        imageio.mimsave('images_net/nn_evolution.gif', frames, format='GIF', duration=1) """
    
