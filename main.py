@@ -45,7 +45,7 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
             net_obj_py.close()
 
     # test last generation best organism
-    trainloader , testloader, _, _, _ = dataset(batch_size)
+    trainloader , testloader, _, _, _ = dataset(batch_size, test = True)
     model = train(Net(best_net), trainloader , batch_size, all=True)
     acc = eval(model, testloader)
     
