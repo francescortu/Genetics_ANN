@@ -198,7 +198,6 @@ class cross_type(Enum):
 
 def GA_crossover(parent1, parent2, type = None):
     "randomly choose the crossover type"
-    type = cross_type.ONE_POINT
     if type == None:
         type = np.random.choice(list(cross_type))
     if type == cross_type.ONE_POINT:
