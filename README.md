@@ -1,6 +1,6 @@
 # Automatic selection of CNN using genetic algorithm
 
-This repository contains an implementation of the DENSER approach for automatic selection of a Convoluational Neural Network (CNN) architecture. The followed approach is further described in this paper: [DENSER: Automatic Selection of Convolutional Neural Network Architectures](https://arxiv.org/abs/1904.08900).
+This repository contains an implementation (in PyTorch) of the DENSER approach for automatic selection of a Convoluational Neural Network (CNN) architecture. The followed approach is further described in this paper: [DENSER: Automatic Selection of Convolutional Neural Network Architectures](https://arxiv.org/abs/1904.08900).
 
 ## DENSER
 
@@ -10,7 +10,9 @@ The DENSER approach, in particular, combines **Genetic Algorithms** (GA) with **
 The grammar is used to dynamically generate a population of CNN architectures. Each individual of the population is then evaluated using a fitness function. As fitness function the **accuracy** of the CNN on a validation set is used. 
 Evolution is performed in the following way:
 * an initial population (of size $n$) of randomly generated CNNs is created (following the rules of the given grammar)
+
 then, for the number of generations we initially set, we repeat the following steps:
+
 * a fitness score is computed for each individual
 * a pair of parents is chosen randomly from the fittest individuals
 * through crossover operation we create two new individuals and we choose the longest one
@@ -25,7 +27,14 @@ The whole process is repeated until a CNN is found that meets the desired accura
 The grammar used is almost the same as the one reported in the paper and can be found in 'src/cnn.grammar.txt'.
 
 
-## Needed dependencies 
+## Requirements
+
+* numpy  >= 1.21.5
+* python  >= 3.8.13
+* pytorch >= 1.11.0
+* tqdm >= 4.64.0
+* matplotlib >= 3.5.2 
+
 
 ## Usage
 To run type:
