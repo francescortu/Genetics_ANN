@@ -10,7 +10,7 @@ The DENSER approach is based on the idea of using a grammar to describe the arch
 ## Usage
 To run type:
 ```bash
-$ python3 main.py {cifar10 | MNIST} {pop_size} {num_gen} {batch_size}
+$ python3 main.py {cifar10 │ MNIST} {pop_size} {num_gen} {batch_size}
 ```
 The programm will print onf best_organisms the best performing CNNs found during evolution.
 
@@ -21,11 +21,11 @@ The programm will print onf best_organisms the best performing CNNs found during
 ├── main.py
 ├── main_test.py
 ├── README.md
-|
+│
 ├── results
-|   ├── plots
-|   └── all_generations_data.csv
-|   
+│   ├── plots
+│   └── all_generations_data.csv
+│   
 ├── scripts
 │   ├── dataloader.py
 │   ├── train.py
