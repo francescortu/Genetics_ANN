@@ -18,22 +18,23 @@ def cifar10(batch_size=4, test = False):
     else:
         trainset, testset = torch.utils.data.random_split(trainset, [40000, 10000])
 
-    batch_size = batch_size
 
     # dataloaders
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,  shuffle=True, num_workers=2)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,  shuffle=False, num_workers=2) 
 
-    # input_size = 28*28
-    input_size =  trainloader.dataset.data.shape[1]
+    # input_size 
+    # input_size =  trainloader.dataset.data.shape[1]
+    input_size = 32
 
     # number of classes
-    n_classes = len(trainloader.dataset.classes)
+    # n_classes = len(trainloader.dataset.classes)
+    n_classes = 10
 
-    #input_channels = 3
+    #input_channels
     input_channels = 3
 
-    return trainset, testset, input_size, n_classes, input_channels
+    return trainloader, testloader, input_size, n_classes, input_channels
 
 
 def MNIST(batch_size=4, test = False):
@@ -43,26 +44,27 @@ def MNIST(batch_size=4, test = False):
 
     # We download the train and the test dataset in the given root and applying the given transforms
     trainset = torchvision.datasets.MNIST(root='./data', train=True,  download=True, transform=transform)
+    
 
     if test:
-         testset = torchvision.datasets.MNIST(root='./data', train=False,  download=True, transform=transform)
+        testset = torchvision.datasets.MNIST(root='./data', train=False,  download=True, transform=transform)
     else:
-         trainset, testset = torch.utils.data.random_split(trainset, [50000, 10000])
-
-    batch_size = batch_size
+        trainset, testset = torch.utils.data.random_split(trainset, [50000, 10000],  generator=torch.Generator().manual_seed(42) )
+  
 
     # dataloaders
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,  shuffle=True, num_workers=2)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,  shuffle=False, num_workers=2) 
-
-    # input_size = 28*28
-    input_size =  trainloader.dataset.data.shape[1]
+    # input_size
+    # input_size =  trainloader.dataset.data.shape[1]
+    input_size = 28
 
     # number of classes
-    n_classes = len(trainloader.dataset.classes)
+    # n_classes = len(trainloader.dataset.classes)
+    n_classes = 10
 
-    #input_channels = 1
+    #input_channels
     input_channels = 1
 
 
-    return trainset, testset, input_size, n_classes, input_channels
+    return trainloader, testloader, input_size, n_classes, input_channels
