@@ -236,8 +236,6 @@ def GA_bit_mask(parent1, parent2):
 def GA_one_point(parent1, parent2):
     "cut the parent1 and parent2 at random position and swap the two parts"
 
-
-
     # randomly choose if the cut is in the features or in the classification
     cut_parent1 = cut_parent2 = None
     #print(list(module_types)(-1))
@@ -245,11 +243,16 @@ def GA_one_point(parent1, parent2):
     
     if type == module_types.FEATURES and parent1.len_features() > 1 and parent2.len_features() > 1:
         cut_parent1 = np.random.randint(1, parent1.len_features())
-        cut_parent2 = np.random.randint(1, parent2.len_features())
+        # choose cut2 in order to not exceed maximum number of features block
+        cut_parent2 = np.random.randint(1, MAX_LEN_FEATURES -(parent1.len_features() - cut_parent1))
+        #cut_parent2 = np.random.randint(1, parent2.len_features())
     
     elif type == module_types.CLASSIFICATION and parent1.len_classification() > 1 and parent2.len_classification() > 1:
         cut_parent1 = np.random.randint(parent1.len_features()+1, parent1._len()-1)
-        cut_parent2 = np.random.randint(parent2.len_features()+1, parent2._len()-1)
+        # choose cut2 in order to not exceed maximum number of classification block
+        cut_parent2 = np.random.randint(1, MAX_LEN_CLASSIFICATION - (parent1.len_classification()  - (cut_parent1 - parent1.len_features())))
+        cut_parent2 = cut_parent2 + parent1.len_features()
+        #cut_parent2 = np.random.randint(parent2.len_features()+1, parent2._len()-1)
 
     #print("cuts are: ", cut_parent1, ' ', cut_parent2)
     
