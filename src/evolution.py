@@ -13,12 +13,14 @@ class evolution():
         try:
             trainloader, testloader, input_size, n_classes, input_channels = dataset(batch_size)
 
-        except:
+        except Exception as e:
             print("Error: dataset not found")
+            print(e)
             return
 
         self.trainloader = trainloader
         self.testloader = testloader
+        print(self.trainloader)
         self.batch_size = batch_size
         
 
