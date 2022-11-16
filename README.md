@@ -64,13 +64,5 @@ The programm will print onf best_organisms the best performing CNNs found during
 └── todo.txt
 ``` 
 
-## Network representation
-
-By using a GA structure for the evolution of CNNs like they one reported in the paper: [(features, 1, 10), (classification, 1,
-2), (softmax, 1, 1), (learning, 1, 1)], a CNN like the following one can be obtained.
-
-
-## Network evolution
-
 
 
