@@ -97,7 +97,7 @@ def read_results(population_size, subpath=''):
     #plot_results(population_size, data, path)
 
        
-def create_random_gif(subpath):
+def plot_net_representation(subpath):
     path = 'results/'
     if subpath:
         path += subpath
@@ -107,7 +107,6 @@ def create_random_gif(subpath):
             with open(f'{path}/best_net_encoding_res/{filename}', 'rb') as f:
                 net_encoding = pickle.load(f)
                 gen_num = int(filename[-7:-4])
-                print(gen_num)
                 net_encoding.draw(gen_num)
 
     # Build GIF
