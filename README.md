@@ -34,7 +34,7 @@ The grammar used is almost the same as the one reported in the paper and can be 
 * pytorch >= 1.11.0
 * tqdm >= 4.64.0
 * matplotlib >= 3.5.2 
-
+* torchvision >= 0.12.0 
 
 ## Usage
 To run type:
