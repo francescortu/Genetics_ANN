@@ -76,10 +76,9 @@ class evolution():
     
     def get_best_organism(self):   
         
-        #self.scores = [self.scoring_function(x) for x in self.population]
-        
-        ## added code for multiprocessing
-        scores = mp.Array('i', range(self.population_size))
+       
+        ## code added for multiprocessing
+        """ scores = mp.Array('i', range(self.population_size))
         processes = []
         for i,x in enumerate(self.population):
             p = mp.Process(target=self.scoring_function, args=(x,i,scores,))
@@ -89,9 +88,10 @@ class evolution():
         for p in processes:
             p.join() 
                    
-        self.scores = scores[:]
+        self.scores = scores[:] """
         ##
 
+        self.scores = [self.scoring_function(x) for x in self.population]
         self.population = [self.population[x] for x in np.argsort(self.scores)[::-1]]
         
         self.best_organism = copy.deepcopy(self.population[0])
@@ -100,11 +100,11 @@ class evolution():
         return self.best_organism, self.best_score
 
 
-    def scoring_function(self, modelcode, index, scores):
+    def scoring_function(self, modelcode):
         model = Net(modelcode)
         model = train(model, self.dataset, self.trainloader, self.batch_size)
         accuracy = eval(model, self.testloader)
-        scores[index] = accuracy
+        #scores[index] = accuracy
         return accuracy
 
     
