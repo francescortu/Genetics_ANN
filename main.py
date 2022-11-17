@@ -28,7 +28,14 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         path += subpath 
         if not os.path.isdir(path):
             os.mkdir(path)
-     
+    
+    # save results to file
+    f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
+    # create the csv writer
+    writer = csv.writer(f)
+
+    fieldnames = ['generation', 'individual', 'accuracy', 'num_layers', 'best_accuracy', 'best_num_layers']
+    writer.writerow(fieldnames)
     res = []
 
     generations = num_generations
@@ -39,10 +46,16 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
         print("Generation ", i , "'s best network accuracy: ", best_score, "%")
         for j in range(population_size):
             res.append([i, j, gen[j]['score'], gen[j]['len'], best_score, best_net._len()])
+            writer.writerows(res)
+            res = []
+            
             # save encoding of best network for each generation
             net_obj_py = open(f"results/best_net_encoding_res/gen{i:003}.pkl", "wb")
             pickle.dump(gen[j]['genotype'], net_obj_py)
             net_obj_py.close()
+
+    # close file
+    f.close()
 
     # test last generation best organism
     trainloader , testloader, _, _, _ = dataset(batch_size, test = True)
@@ -61,17 +74,8 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
     pickle.dump(Net(best_net), net_obj_py)
     net_obj_py.close()
 
-    # save results to file
-    f = open(f'{path}/all_generations_data.csv', 'w+', newline='')
-    # create the csv writer
-    writer = csv.writer(f)
-
-    fieldnames = ['generation', 'individual', 'accuracy', 'num_layers', 'best_accuracy', 'best_num_layers']
-    writer.writerow(fieldnames)
-    
     print("Best accuracy obtained: ", best_score)
-    writer.writerows(res)
-    f.close() 
+    
 
 
 
@@ -120,7 +124,9 @@ if __name__ == "__main__":
     print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
     print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
     run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath) 
-    #read_results(population_size, subpath = subpath)
+    
+    #read_results(subpath = subpath)
+    #plot_net_representation(subpath = subpath)
 
     # check best network saved
     """ filename = f"results/{subpath}/best_organism.pkl"
