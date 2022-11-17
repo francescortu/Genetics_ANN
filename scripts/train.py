@@ -4,9 +4,13 @@ import torch.nn as nn
 import torch
 import torch.optim as optim
 
+from torch.utils.data import DataLoader, BatchSampler, RandomSampler
+from scripts.dataloader import get_dataset
+import numpy as np
+
 DEBUG = 0
 
-def train(model, trainloader, batch_size = 4, epochs = 1, all = False):
+def train(model, dataset_fun, trainloader, batch_size = 4, epochs = 1, all = False):
     '''
     model: the model to train
     trainloader: the dataloader for the training data
@@ -17,26 +21,33 @@ def train(model, trainloader, batch_size = 4, epochs = 1, all = False):
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu") # the device type is automatically chosen
 
     model.to(device)
-    if all:
-        inspected = len(trainloader.dataset)
-        epochs = 2
-    else:
-        inspected = len(trainloader.dataset) / 10  # the number of items to be used for training before printing the loss
-
-    iterations = int(inspected / batch_size)
     
+    if not all:
+        dataset = get_dataset(dataset_fun)
+        # construct a smaller dataloader for the training
+        inspected = len(trainloader.dataset) / 100
+        init = np.random.randint(0, len(trainloader.dataset) - inspected)
+        dataset.data = dataset.data[init:init+inspected]
+        dataset.targets = dataset.targets[init:init+inspected]
+        trainloader = DataLoader(
+                        dataset,
+                        batch_sampler= BatchSampler(RandomSampler(dataset), batch_size, False),
+                        num_workers=2,
+                        pin_memory=True
+                    )
+
     # define the loss function and the optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    for epoch in range(epochs):  # loop over the dataset multiple times
+    for _ in range(epochs):  # loop over the dataset multiple times
 
-        dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
+        #dataloader_iterator = iter(trainloader) # instantiate an iterator which loops through the trainloader, this is needed only if we do not wnat to go throught all the trainset
 
         # for i in tqdm(range(iterations), desc=f"training epoch:{epoch}"):
-        for i in range(iterations):
+        for data in trainloader: #range(iterations):
             try:
-                inputs, labels = next(dataloader_iterator)
+                inputs, labels = data #next(dataloader_iterator)
                 inputs, labels = inputs.to(device), labels.to(device)
                 # zero the parameter gradients
                 optimizer.zero_grad()
