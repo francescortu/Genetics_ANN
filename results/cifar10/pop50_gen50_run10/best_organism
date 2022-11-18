@@ -1,0 +1,22 @@
+Best organism accuracy:  55 %
+######## len: 3 ##########
+
+ module: 0
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 3, 'out': 42})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 42, 'out': 42})
+param:  {'input_channels': 3, 'output_channels': 42}
+output shape 32
+
+ module: 1
+module_types.CLASSIFICATION
+(<layer_type.LINEAR: 3>, None, {'in': 43008, 'out': 687})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 687, 'out': 687})
+param:  {'input_channels': 43008, 'output_channels': 687}
+
+ module: 2
+module_types.LAST_LAYER
+(<layer_type.LINEAR: 3>, None, {'in': 687, 'out': 10})
+(<layer_type.ACTIVATION: 2>, <activation.SOFTMAX: 2>, {'in': 10, 'out': 10})
+param:  {'input_channels': 687, 'output_channels': 10}
+######################################

@@ -1,0 +1,37 @@
+Best organism accuracy:  99 %
+######## len: 5 ##########
+
+ module: 0
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 1, 'padding': 'valid', 'bias': False}, {'in': 1, 'out': 48})
+(<layer_type.BATCH_NORM: 4>, {'eps': 8.144696928527004e-06, 'momentum': 0.7749960867808586}, {'in': 48, 'out': 48})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 48, 'out': 48})
+param:  {'input_channels': 1, 'output_channels': 48}
+output shape 24
+
+ module: 1
+module_types.FEATURES
+(<layer_type.POOLING: 0>, {'pool_type': <pool.MAX: 0>, 'kernel_size': 7, 'stride': 1, 'padding': 0}, {'in': 48, 'out': 48})
+param:  {'input_channels': 48, 'output_channels': 48}
+output shape 18
+
+ module: 2
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 5, 'stride': 1, 'padding': 'valid', 'bias': False}, {'in': 48, 'out': 48})
+(<layer_type.BATCH_NORM: 4>, {'eps': 5.345389840215158e-06, 'momentum': 0.4156149582973603}, {'in': 48, 'out': 48})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 48, 'out': 48})
+param:  {'input_channels': 48, 'output_channels': 48}
+output shape 14
+
+ module: 3
+module_types.CLASSIFICATION
+(<layer_type.LINEAR: 3>, None, {'in': 9408, 'out': 100})
+(<layer_type.ACTIVATION: 2>, <activation.SIGMOID: 1>, {'in': 100, 'out': 100})
+param:  {'input_channels': 9408, 'output_channels': 100}
+
+ module: 4
+module_types.LAST_LAYER
+(<layer_type.LINEAR: 3>, None, {'in': 100, 'out': 10})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 10, 'out': 10})
+param:  {'input_channels': 100, 'output_channels': 10}
+######################################
