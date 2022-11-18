@@ -25,7 +25,7 @@ def train(model, dataset_fun, trainloader, batch_size = 4, epochs = 1, all = Fal
     if not all:
         dataset = get_dataset(dataset_fun)
         # construct a smaller dataloader for the training
-        inspected = len(trainloader.dataset) / 100
+        inspected = int(len(trainloader.dataset) / 100)
         init = np.random.randint(0, len(trainloader.dataset) - inspected)
         dataset.data = dataset.data[init:init+inspected]
         dataset.targets = dataset.targets[init:init+inspected]
