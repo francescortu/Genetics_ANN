@@ -5,14 +5,14 @@ import torchvision.transforms as transforms
 import os
 
 
-transform = transforms.Compose([
-                    transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,)), ])
-
 def cifar10(batch_size=4, test = False):
+    transform = transforms.Compose([
+                        transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,)), ])
 
     # We download the train and the test dataset in the given root and applying the given transforms
-    trainset = get_dataset(cifar10)
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,  download=True, transform=transform)
+
     if test:
          testset = torchvision.datasets.CIFAR10(root='./data', train=False,  download=True, transform=transform)
     else:
@@ -38,9 +38,12 @@ def cifar10(batch_size=4, test = False):
 
 
 def MNIST(batch_size=4, test = False):
+    transform = transforms.Compose([
+                        transforms.ToTensor(),
+                transforms.Normalize((0.1307,), (0.3081,)), ])
 
     # We download the train and the test dataset in the given root and applying the given transforms
-    trainset = get_dataset(MNIST)
+    trainset = torchvision.datasets.MNIST(root='./data', train=True,  download=True, transform=transform)
     
 
     if test:
@@ -65,13 +68,3 @@ def MNIST(batch_size=4, test = False):
 
 
     return trainloader, testloader, input_size, n_classes, input_channels
-
-
-def get_dataset(dataset):
-
-    if dataset == cifar10:
-        return torchvision.datasets.CIFAR10(root='./data', train=True,  download=True, transform=transform)
-    elif dataset == MNIST:
-        return torchvision.datasets.MNIST(root='./data', train=True,  download=True, transform=transform)
-    else:
-        raise ValueError("Dataset not supported")
