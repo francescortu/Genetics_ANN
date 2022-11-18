@@ -1,11 +1,8 @@
 from src.nn_encoding import *
-from scripts.train import train, eval
-
-import multiprocessing as mp
+from scripts.train import train, eval, test_model
 
 MUTATION_RATE = 30
 CROSSOVER_RATE = 70
-
 
 class evolution():
     def __init__(self, population_size=10, holdout=1, mating=True, dataset=None, batch_size=4):
@@ -13,7 +10,6 @@ class evolution():
         initial function fun is a function to produce nets, used for the original population
         scoring_function must be a function which accepts a net as input and returns a float
         """
-        print(dataset)
         try:
             trainloader, testloader, input_size, n_classes, input_channels = dataset(batch_size)
 
@@ -24,8 +20,9 @@ class evolution():
 
         self.trainloader = trainloader
         self.testloader = testloader
+        print(self.trainloader)
         self.batch_size = batch_size
-        self.dataset = dataset
+        
 
         self.population_size = population_size
         self.population = []
@@ -73,25 +70,8 @@ class evolution():
 
         return generation
 
-    
     def get_best_organism(self):   
-        
-        #self.scores = [self.scoring_function(x) for x in self.population]
-        
-        ## added code for multiprocessing
-        scores = mp.Array('i', range(self.population_size))
-        processes = []
-        for i,x in enumerate(self.population):
-            p = mp.Process(target=self.scoring_function, args=(x,i,scores,))
-            p.start()
-            processes.append(p)
-
-        for p in processes:
-            p.join() 
-                   
-        self.scores = scores[:]
-        ##
-
+        self.scores = [self.scoring_function(x) for x in self.population]
         self.population = [self.population[x] for x in np.argsort(self.scores)[::-1]]
         
         self.best_organism = copy.deepcopy(self.population[0])
@@ -103,13 +83,9 @@ class evolution():
         train(model, self.trainloader, self.batch_size)
         return model
 
-    def scoring_function(self, modelcode, index, scores):
+    def scoring_function(self, modelcode):
         model = Net(modelcode)
-        model = train(model, self.dataset, self.trainloader, self.batch_size)
-        print("eval")
+        model = self.training_function(model)
         accuracy = eval(model, self.testloader)
-        print("scoring")
-        scores[index] = accuracy
+        
         return accuracy
-
-    
