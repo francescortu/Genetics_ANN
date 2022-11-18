@@ -58,7 +58,7 @@ def run_evolution(dataset, population_size = 2, num_generations=2, batch_size=4,
 
     # save best organism object in specific subfolder
     net_obj_py = open(f"{path}/best_organism.pkl", "wb")
-    pickle.dump(Net(best_net), net_obj_py)
+    pickle.dump(best_net, net_obj_py)
     net_obj_py.close()
 
     # save results to file
@@ -121,8 +121,8 @@ if __name__ == "__main__":
     print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
     run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath) 
     
-    #read_results(subpath = subpath)
-    #plot_net_representation(subpath = subpath)
+    read_results(subpath = subpath)
+    # plot_net_representation(subpath = subpath)
 
     # check best network saved
     """ filename = f"results/{subpath}/best_organism.pkl"
