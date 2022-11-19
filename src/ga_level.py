@@ -145,7 +145,7 @@ class Net_encoding:
         self.GA_encoding(self.len_features()).layers[0].channels['in'] = last_in
 
 
-    def draw(self, gen):
+    def draw(self, gen, path):
         "draw the network"
         self.setting_channels()
         global START
@@ -182,7 +182,7 @@ class Net_encoding:
         # change background color
 
         # save image
-        plt.savefig(f'images_net/gen{gen:003}.png', dpi=300, transparent=True)
+        plt.savefig(f'{path}/gen{gen:003}.png', dpi=300, transparent=True)
         plt.close()
         #pyplot.show()
 

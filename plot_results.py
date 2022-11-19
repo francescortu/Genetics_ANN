@@ -1,6 +1,6 @@
 import csv
 import imageio
-from os import listdir
+import os
 import matplotlib.pyplot as plt
 
 from src.nn_encoding import Net_encoding
@@ -39,6 +39,7 @@ def plot_generation_accuracy(best_net_acc, path):
 def plot_generation_netlen(best_net_len, path):
     x = [i for i in range(len(best_net_len))]
     plt.plot(x, best_net_len)
+    plt.scatter(x, best_net_len)
 
     plt.xlabel('Generation', color = 'white')
     plt.ylabel('Number of layers', color = 'white')
@@ -78,13 +79,22 @@ def plot_results(data, path):
         y.append(float(data[i][2]))
         col_list.append(colors[int(data[i][0])])
 
-        if i % population_size == 0:
-            best_net_acc.append(float(data[i][4]))
-            best_net_len.append(int(data[i][5]))
+        if i % population_size == 0 and i != 0:
+            curr_gen_score = y[i - population_size: i]
+            curr_gen = data[i - population_size: i]
+            index = np.argmax(curr_gen_score)
+            best_score = np.amax(curr_gen_score)
+            best_net_acc.append(best_score)
+            best_net_len.append(int(curr_gen[index][3]))
 
-    #plot_individual_accuracy(x,y,col_list, path)
+
+    path += '/plot'
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
+    plot_individual_accuracy(x,y,col_list, path)
     
-    #plot_generation_accuracy(best_net_acc, path)
+    plot_generation_accuracy(best_net_acc, path)
 
     plot_generation_netlen(best_net_len, path)
 
@@ -100,7 +110,7 @@ def read_results(subpath=''):
     if subpath:
         path += subpath 
 
-    with open(f'{path}/cifar10/pop50_gen50_run1/all_generations_data.csv', mode='r') as csv_file:
+    with open(f'{path}/all_generations_data.csv', mode='r') as csv_file:
         data = list(csv.reader(csv_file, delimiter = ','))
     
     # plot results 
@@ -109,20 +119,24 @@ def read_results(subpath=''):
        
 def plot_net_representation(subpath):
     path = 'results/'
+    init_path = path + subpath
     if subpath:
-        path += subpath
+        path += subpath + '/net_representation'
+        if not os.path.isdir(path):
+            os.mkdir(path)
+
     # take network encoding from file of results
-    for filename in listdir(f"{path}/best_net_encoding_res"):
+    for filename in os.listdir(f"{init_path}/best_net_encoding_res"):
         if filename.endswith('.pkl'):
-            with open(f'{path}/best_net_encoding_res/{filename}', 'rb') as f:
+            with open(f'{init_path}/best_net_encoding_res/{filename}', 'rb') as f:
                 net_encoding = pickle.load(f)
                 gen_num = int(filename[-7:-4])
-                net_encoding.draw(gen_num)
+                net_encoding.draw(gen_num, path)
 
     # Build GIF
     """ frames = []
 
-    for filename in listdir('images_net'):
+    for filename in os.listdir('images_net'):
         if filename.endswith('.png'):
             image = imageio.imread('images_net/'+filename)
             frames.append(image)
