@@ -39,22 +39,20 @@ The grammar used is almost the same as the one reported in the paper and can be 
 ## Usage
 To run type:
 ```bash
-$ python3 main.py {cifar10 │ MNIST} {pop_size} {num_gen} {batch_size}
+$ python3 main.py {cifar10 │ MNIST} {pop_size} {num_gen} {batch_size} {subpath-on-you-want-to-save}
 ```
 The programm will print onf best_organisms the best performing CNNs found during evolution.
 
 ## Structure of the repository
 ``` bash
 ├── data
-├── images_net
 ├── main.py
 ├── main_test.py
 ├── README.md
-│
 ├── results
-│   ├── plots
-│   └── all_generations_data.csv
-│   
+│   ├── MNIST
+│   └── cifar10
+│ 
 ├── scripts
 │   ├── dataloader.py
 │   ├── train.py
@@ -67,10 +65,10 @@ The programm will print onf best_organisms the best performing CNNs found during
 │   ├── grammar.py
 │   ├── mutations.py
 │   ├── nn_encoding.py
-├── tests
-│   │   
-│   └── tests.py
-└── todo.txt
+|
+└── tests
+    └── tests.py
+
 ``` 
 
 
