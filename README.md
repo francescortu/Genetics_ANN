@@ -1,6 +1,6 @@
 # Automatic selection of CNN using genetic algorithm
 
-This repository contains an implementation (in PyTorch) of the DENSER approach for automatic selection of a Convoluational Neural Network (CNN) architecture. The followed approach is further described in this paper: [DENSER: Automatic Selection of Convolutional Neural Network Architectures](https://arxiv.org/abs/1904.08900).
+This repository contains an implementation (in PyTorch) of the DENSER  ( Deep Evolutionary Network Structured Representation) approach for automatic selection of a Convoluational Neural Network (CNN) architecture. The followed approach is further described in this paper: [DENSER: Automatic Selection of Convolutional Neural Network Architectures](https://arxiv.org/abs/1904.08900).
 
 ## DENSER
 

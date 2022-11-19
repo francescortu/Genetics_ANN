@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=24:00:00
+#PBS -l walltime=48:00:00
 #PBS -q dssc_gpu
 #PBS -l nodes=1:ppn=1
 
@@ -35,20 +35,20 @@ conda activate deep_le
 # fi
 start=1
 end=1
-touch run_script/running_info_${start}_${end}
+touch run_script/running_info
 
 for (( i=$start; i<=$end; i++ ))
 do
-    dataset="MNIST"
+    dataset="cifar10"
     pop_size=50
     gen_size=50
     batch_size=4
 
-    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run3"
+    PATH_TO_SAVE="${dataset}/pop${pop_size}_gen${gen_size}_run20"
     mkdir -p "results/$PATH_TO_SAVE"
   
-    python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE
-    echo "run ${dataset} ${i} finished" >> run_script/running_info_${start}_${end}
+    python main.py $dataset $pop_size $gen_size $batch_size $PATH_TO_SAVE >> run_script/running_info
+    echo "run ${dataset} ${i} finished" >> run_script/running_info
 done
 
 # for (( i=$start; i<=$end; i++ ))
@@ -66,5 +66,5 @@ done
 #     echo "run ${dataset} ${i} finished" >> run_script/running_info
 # done
 
-rm run_script/running_info_${start}_${end}
+rm run_script/running_infoqs
 exit
