@@ -1,0 +1,39 @@
+Best organism accuracy:  71 %
+######## len: 5 ##########
+
+ module: 0
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 3, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 3, 'out': 184})
+(<layer_type.BATCH_NORM: 4>, {'eps': 8.276958417286315e-06, 'momentum': 0.8907241145990552}, {'in': 184, 'out': 184})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 184, 'out': 184})
+param:  {'input_channels': 3, 'output_channels': 184}
+output shape 32
+
+ module: 1
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 3, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 184, 'out': 184})
+(<layer_type.BATCH_NORM: 4>, {'eps': 8.276958417286315e-06, 'momentum': 0.8907241145990552}, {'in': 184, 'out': 184})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 184, 'out': 184})
+param:  {'input_channels': 184, 'output_channels': 184}
+output shape 32
+
+ module: 2
+module_types.FEATURES
+(<layer_type.CONV: 1>, {'kernel_size': 3, 'stride': 1, 'padding': 'same', 'bias': False}, {'in': 184, 'out': 184})
+(<layer_type.BATCH_NORM: 4>, {'eps': 8.276958417286315e-06, 'momentum': 0.8907241145990552}, {'in': 184, 'out': 184})
+(<layer_type.ACTIVATION: 2>, <activation.RELU: 0>, {'in': 184, 'out': 184})
+param:  {'input_channels': 184, 'output_channels': 184}
+output shape 32
+
+ module: 3
+module_types.CLASSIFICATION
+(<layer_type.LINEAR: 3>, None, {'in': 188416, 'out': 1538})
+(<layer_type.ACTIVATION: 2>, <activation.SIGMOID: 1>, {'in': 1538, 'out': 1538})
+param:  {'input_channels': 188416, 'output_channels': 1538}
+
+ module: 4
+module_types.LAST_LAYER
+(<layer_type.LINEAR: 3>, None, {'in': 1538, 'out': 10})
+(<layer_type.ACTIVATION: 2>, <activation.SOFTMAX: 2>, {'in': 10, 'out': 10})
+param:  {'input_channels': 1538, 'output_channels': 10}
+######################################
