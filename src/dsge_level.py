@@ -38,7 +38,7 @@ MAX_LEN_BLOCK_FEATURES = 1
 MIN_CHANNEL_FEATURES = 9
 MAX_CHANNEL_FEATURES = 50
 MIN_CHANNEL_CLASSIFICATION = 64
-MAX_CHANNEL_CLASSIFICATION = 1024
+MAX_CHANNEL_CLASSIFICATION = 2048
 
 
             
@@ -292,8 +292,6 @@ class Module:
             output_shape = self.layers[i].compute_shape(output_shape)
         return output_shape
 
- 
-
 
     # return module type and layers
     def get(self):
@@ -351,9 +349,13 @@ class Module:
         if layer_type == layer_type.CONV:
             # get activation function type (features block if conv have layers: conv, batch_norm, activation)
             activation_layer_type = str(self.layers[len(self.layers)-1].param)[11:]
-
+            if len(self.layers) == 3:
+                batch = 'True'
+            else:
+                batch = 'False'
             plt.text(x1, y1 - 6, f'Conv2d', fontsize=font_size, fontweight='bold',  color=text_color)
-            plt.text(x1, y1 - 12, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}', fontsize=font_size, color=text_color)
+            plt.text(x1, y1 - 15, f'in: {c_in}, out: {c_out}\nkernel: {kernel_size}x{kernel_size}\nbatch: {batch}', fontsize=font_size, color=text_color)
+        
         elif layer_type == layer_type.POOLING:
             plt.text(x1, y1 - 6, f'Pool2d ', fontsize=font_size, fontweight='bold',  color=text_color)
         
@@ -475,4 +477,4 @@ class Module:
         pyplot.gca().add_line(line)
         pyplot.gca().add_line(line1)
         pyplot.gca().add_line(line2)
-        plt.text(x1 + (x2 -x1)/3 - 1, y1 - 2, name,  fontweight='bold', fontsize=font_size,  color=text_color)
+        plt.text(x1 + (x2 -x1)/3 - 3, y1 - 2, name,  fontweight='bold', fontsize=font_size,  color=text_color)
