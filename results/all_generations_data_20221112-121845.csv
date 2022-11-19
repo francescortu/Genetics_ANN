@@ -1,7 +1,0 @@
-generation,individual,accuracy,num_layers,best_accuracy,best_num_layers
-0,0,63,3,84,3
-0,1,0,4,84,3
-0,2,11,11,84,3
-1,0,59,3,84,3
-1,1,82,3,84,3
-1,2,84,3,84,3

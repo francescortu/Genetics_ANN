@@ -117,12 +117,9 @@ if __name__ == "__main__":
     
     
     # run evolution
-    """ print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
+    print(f"\n\n Evolution of a population of networks: \n dataset: {dataset}, population_size: {population_size}, number of generation: {num_generations},  batch size: {batch_size}, path: {subpath} \n\n")
     print("Running Device:", torch.device("cuda" if torch.cuda.is_available() else "cpu") )
-    run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath)  """
-    
-    read_results(subpath = 'cifar10/pop50_gen50_run_e')
-    #plot_net_representation(subpath = 'cifar10/pop50_gen50_run_e')
+    run_evolution(dataset, population_size, num_generations, batch_size, subpath = subpath) 
 
     # check best network saved
     """ filename = f"results/{subpath}/best_organism.pkl"

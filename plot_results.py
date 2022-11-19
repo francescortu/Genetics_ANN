@@ -10,13 +10,15 @@ import pickle
 import random
 
 def plot_individual_accuracy(x,y,color, path):
-    for i in range(len(x)):
-        plt.scatter(x[i], y[i], c = color[i], cmap = 'viridis')
 
-    plt.xlabel('Individual', color = 'white')
-    plt.ylabel('fitness (%)', color = 'white')
-    plt.tick_params(axis='x', colors="white")
-    plt.tick_params(axis='y', colors="white")
+    with plt.rc_context({'axes.edgecolor':'white', 'xtick.color':'white', 'ytick.color':'white'}):
+        fig = plt.figure()
+        for i in range(len(x)):
+            plt.scatter(x[i], y[i], c = color[i], cmap = 'viridis')
+
+        plt.xlabel('Individual', color = 'white')
+        plt.ylabel('fitness (%)', color = 'white')
+  
   
     plt.title(f"Accuracy for each individual in each generation", color = 'white')
     plt.savefig(f'{path}/individual_accuracy.png', dpi=300, transparent=True)
@@ -24,12 +26,17 @@ def plot_individual_accuracy(x,y,color, path):
 
 def plot_generation_accuracy(best_net_acc, path):
     x = [i for i in range(len(best_net_acc))]
-    plt.plot(x, best_net_acc)
 
-    plt.xlabel('Generation', color = 'white')
-    plt.ylabel('fitness (%)', color = 'white')
-    plt.tick_params(axis='x', colors="white")
-    plt.tick_params(axis='y', colors="white")
+    with plt.rc_context({'axes.edgecolor':'white', 'xtick.color':'white', 'ytick.color':'white'}):
+
+        fig = plt.figure()
+
+        plt.plot(x, best_net_acc, color = '#2f8750')
+        plt.scatter(x, best_net_acc, color = '#2f8750')
+
+        plt.xlabel('Generation', color = 'white')
+        plt.ylabel('fitness (%)', color = 'white')
+        
 
     plt.title(f"Best fitness value obtained for each generation", color = 'white')
     plt.savefig(f'{path}/generation_accuracy.png', dpi=300, transparent=True)
@@ -38,14 +45,17 @@ def plot_generation_accuracy(best_net_acc, path):
 
 def plot_generation_netlen(best_net_len, path):
     x = [i for i in range(len(best_net_len))]
-    plt.plot(x, best_net_len)
-    plt.scatter(x, best_net_len)
 
-    plt.xlabel('Generation', color = 'white')
-    plt.ylabel('Number of layers', color = 'white')
-    plt.tick_params(axis='x', colors="white")
-    plt.tick_params(axis='y', colors="white")
-    plt.yticks(range(max(best_net_len)))
+    with plt.rc_context({'axes.edgecolor':'white', 'xtick.color':'white', 'ytick.color':'white'}):
+        fig = plt.figure()
+
+        plt.plot(x, best_net_len, color = '#2f8750')
+        plt.scatter(x, best_net_len, color = '#2f8750')
+
+        plt.xlabel('Generation', color = 'white')
+        plt.ylabel('Number of layers', color = 'white')
+
+        plt.yticks(range(max(best_net_len)))
 
     plt.title(f"Number of layers obtained for each generation's best individual", color = 'white')
     plt.savefig(f'{path}/generation_net_len.png', dpi=300, transparent=True)
